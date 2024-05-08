@@ -10,7 +10,7 @@ export const sendEmail = (recipient, subject, body) => {
     });
 
     const mailOptions = {
-        from: '"Financial Tracker" <ketymagnifique@gmail.com>',
+        from: '"AgriSokoConnect" <ketymagnifique@gmail.com>',
         to: recipient,
         subject: subject,
         text: body

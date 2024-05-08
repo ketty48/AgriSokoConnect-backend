@@ -1,7 +1,7 @@
 // middleware/auth.js
 
 import jwt from 'jsonwebtoken';
-import User from '../models/user.model.js';
+import User from '../models/users.model.js';
 import configuration from '../configs/index.js'
 
 const requireAuth = async (req, res, next) => {

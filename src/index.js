@@ -5,6 +5,7 @@ import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
 import configurations from "./configs/index.js";
+import Routers from "./routers/index.js";
 
 
 // const corsOptions = {
@@ -16,7 +17,7 @@ import configurations from "./configs/index.js";
 const app = express();
 app.use(cors());
 app.use(express.json());
-
+app.use('/AgriSoko', Routers);
 
 app.use('/',(req,res)=>{
     res.status(200).json({

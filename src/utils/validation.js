@@ -1,12 +1,6 @@
 import { body } from "express-validator";
 
-export const addexpenseValidation = [
-    body("cityName", "expense name is required").not().isEmpty(),
-];
 
-export const addbudgetValidation = [
-    body("name", "budget name is required").not().isEmpty(),
-];
 
 export const forgotPasswordValidation = [
     body("email", "Email must be provided").not().isEmpty(),
@@ -23,7 +17,7 @@ export const otpValidation = [
 ];
 
 export const testValidations = [
-    body("cityName", "expense name is required").not().isEmpty(),
+ 
     body("email", "Email is required").not().isEmpty(),
     body("email", "Invalid email").isEmail(),
 ];

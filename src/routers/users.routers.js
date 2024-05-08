@@ -1,6 +1,6 @@
 import express from 'express';
 const userRouter = express.Router();
-import { SignUp, SignIn, ValidateOpt, ForgotPassword, ResetPassword,updateUser } from '../controllers/user.controller.js';
+import { SignUp, SignIn, ValidateOpt, ForgotPassword, ResetPassword,updateUser } from '../controllers/users.controller.js';
 import { signUpValidations, signInValidations, otpValidation, forgotPasswordValidation, resetPasswordValidation } from '../utils/validation.js';
 import { requireAuth } from '../middlewares/authorization.js';
 

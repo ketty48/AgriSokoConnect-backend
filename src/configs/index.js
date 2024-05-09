@@ -8,6 +8,9 @@ const Configs = {
     JWT_EXPIRES_IN: process.env.EXPIRATION,
     JWT_REFRESH_EXPIRES_IN: process.env.JWT_REFRESH_EXPIRES_IN,
     JWT_REFRESH_COOKIE_NAME: process.env.JWT_REFRESH_COOKIE_NAME,
+    clientID: process.env.CLIENT_ID,
+    clientSecret: process.env.clientSecret,
+    callbackURL: process.env.callbackURL
 }
 
 export default Configs;

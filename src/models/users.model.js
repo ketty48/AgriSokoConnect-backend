@@ -1,10 +1,6 @@
 import { Schema, model,mongoose } from 'mongoose';
 
 const UserSchema = new Schema({
-    fullName: {
-        type: String,
-        required: true,
-    },
     email: {
         type: String,
         required: true,
@@ -18,18 +14,10 @@ const UserSchema = new Schema({
         type: String,
         required: true
     },
-    address: {
-        type: String,
-        required: true,
-    },
-    PhoneNumber: {
-        type: Number,
-        required: true,
-    },
     role: {
         type:"string",
         enum: {
-            values: ["Goverment","Farmer", "Buyer","admin"],
+            values: ["goverment","farmer", "buyer","admin"],
             message: "{VALUE} is not a valid status",
         },
         default: "Farmer",

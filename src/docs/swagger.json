@@ -1,0 +1,297 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Financial Tracker",
+    "description": "This is the API Specification for the financial tracking app backend server.",
+    "contact": {
+      "email": "ketymagnifique@gmail.com"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    },
+    "version": "1.0.0"
+  },
+  "externalDocs": {
+    "description": "Get source code",
+    "url": "https://github.com/ketty48/financial_tracking.git"
+  },
+  "basePath": "/",
+  "servers": [
+    {
+      "url": "http://localhost:5000",
+      "description": "Local server"
+    },
+    {
+      "url": "https://financial-tracker.onrender.com",
+      "description": "Production server"
+    }
+  ],
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "paths": {
+    "/financial/user/signup": {
+      "post": {
+        "summary": "Create account",
+        "description": "Create a new account",
+        "tags": ["Authentication"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/account"
+            },
+            "required": true,
+            "description": "Account object"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Account created"
+          }
+        }
+      }
+    },
+    "/financial/user/signin": {
+      "post": {
+        "summary": "Login",
+        "description": "Login to the application",
+        "tags": ["Authentication"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/account"
+            },
+            "required": true,
+            "description": "Credentials object"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Login successful"
+          }
+        }
+      }
+    },
+    "/financial/user/verify": {
+      "post": {
+        "summary": "Verify",
+        "description": "Verify your account",
+        "tags": ["Otp"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/otp"
+            },
+            "required": true,
+            "description": "Credentials object"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Account Verfied"
+          }
+        }
+      }
+    },
+    "/financial/user/update": {
+      "put": {
+        "summary": "Update your account",
+        "description": "update account",
+        "tags": ["Authentication"],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/account"
+            },
+            "required": true,
+            "description": "Account object"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Account updated successfully"
+          }
+        }
+      }
+    },
+    "/financial/user/forgotPassword": {
+      "post": {
+        "summary": "Forgot password",
+        "description": "Forgot password",
+        "tags": ["Forgot Password"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/forgot"
+            },
+            "required": true,
+            "description": "Credentials object"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Login successful"
+          }
+        }
+      }
+    },
+    "/financial/user/resetPassword": {
+      "post": {
+        "summary": "Reset",
+        "description": "Reset Password",
+        "tags": ["Reset"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/reset"
+            },
+            "required": true,
+            "description": "Credentials object"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reset Password successfully"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "account": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string",
+          "minLength": 6
+        },
+      
+        "income": {
+          "type": "number"
+        }
+      },
+      "required": ["email", "password"]
+    },
+    "otp": {
+      "type": "object",
+      "properties": {
+        "otp": {
+          "type": "number"
+        }
+      },
+      "required": ["otp"]
+    },
+    "forgot": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        }
+      },
+      "required": ["email"]
+    },
+    "reset": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string"
+        },
+        "id":{
+          "type": "string"
+        },
+
+        "password": {
+          "type": "string"
+        }
+      },
+      "required": ["token", "password"]
+    },
+    "expenses": {
+      "type": "object",
+      "properties": {
+        "category": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number"
+        },
+        "description": {
+          "type": "string"
+        },
+        "date": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["category", "amount", "description", "date"]
+    },
+    "goals": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "targetAmount": {
+          "type": "number"
+        },
+        "deadline": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "achieved": {
+          "type": "boolean"
+        }
+      },
+      "required": ["title", "targetAmount", "deadline", "achieved"]
+    },
+    "budgets": {
+      "type": "object",
+        "properties": {
+          "budgets": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "category": {
+                  "type": "string"
+                },
+                "limit": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        },
+        "required": ["category", "limit"]
+      }
+  },
+  "securityDefinitions": {
+    "BearerAuth": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header"
+    }
+  }
+}

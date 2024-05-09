@@ -10,6 +10,7 @@ import jwt from "jsonwebtoken";
 import Token from "../models/authToken.model.js";
 import configuration from '../configs/index.js'
 import sendTokenCookie from "../middlewares/cookie.js";
+import profileModel from "../models/editProfile.model.js"
 
 
 
@@ -38,13 +39,11 @@ export const SignUp = asyncWrapper(async (req, res, next) => {
     const otp = otpGenerator();
     const otpExpirationDate = new Date().getTime() + (60 * 1000 * 5);
 
+    // Create a new user in UserModel
     const newUser = new UserModel({
-        fullName: req.body.fullName,
         email: req.body.email,
         userName: req.body.userName,
         password: hashedPassword,
-        address: req.body.address,
-        PhoneNumber: req.body.PhoneNumber,
         role: req.body.role, 
         otp: otp,
         otpExpires: otpExpirationDate,
@@ -52,16 +51,37 @@ export const SignUp = asyncWrapper(async (req, res, next) => {
 
     const savedUser = await newUser.save();
 
+    if (!savedUser) {
+        return next(new InternalServerError("User registration failed"));
+    }
+
+    // Create a new profile for the user
+    const newProfile = new profileModel({
+        user: savedUser._id,
+        fullName: req.body.fullName,
+        address1: req.body.address,
+        PhoneNumber: req.body.PhoneNumber,
+   
+    });
+
+    const savedProfile = await newProfile.save();
+
+    if (!savedProfile) {
+        // If profile creation fails, you might want to delete the user created earlier
+        await UserModel.findByIdAndDelete(savedUser._id);
+        return next(new InternalServerError("Profile creation failed"));
+    }
+
     // Send email verification
     await sendEmail(req.body.email, "Verify your account", `Your OTP is ${otp}`);
 
-    if (savedUser) {
-        return res.status(201).json({
-            message: "User account created!",
-            user: savedUser
-        });
-    }
+    return res.status(201).json({
+        message: "User account created!",
+        user: savedUser,
+        profile: savedProfile
+    });
 });
+
 
 export const ValidateOpt = asyncWrapper(async (req, res, next) => {
     // Validation
@@ -94,40 +114,45 @@ export const ValidateOpt = asyncWrapper(async (req, res, next) => {
 });
 
 export const SignIn = asyncWrapper(async (req, res, next) => {
-    // Validation
+
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return next(new BadRequestError(errors.array()[0].msg));
     }
 
-    // Find user
     const foundUser = await UserModel.findOne({ email: req.body.email });
     
-
     if (!foundUser) {
         res.status(404).send({error:'Invalid email or password'});
         return next(new BadRequestError("Invalid email or password!"));
     };
 
-    // Check account verification
     if (!foundUser.verified) {
         return next(new BadRequestError("Your account is not verified!"));
     }
     
-    // Verify password
-    const isPasswordVerfied = await bcryptjs.compareSync(req.body.password, foundUser.password);
-    if (!isPasswordVerfied) {
+    const isPasswordVerified = await bcryptjs.compareSync(req.body.password, foundUser.password);
+    if (!isPasswordVerified) {
         return next(new BadRequestError("Invalid email or password!"));
     }
-
-    // Generate token
-    const token = jwt.sign({ id: foundUser.id, email: foundUser.email }, configuration.JWT_SECRET, { expiresIn: "1h" });
+    const token = jwt.sign({ id: foundUser.id, email: foundUser.email, role: foundUser.role }, configuration.JWT_SECRET, { expiresIn: "1h" });
     sendTokenCookie(token, res);
+    let dashboardURL;
+    if (foundUser.role === 'farmer') {
+        dashboardURL = '/farmer/dashboard';
+    } else if (foundUser.role === 'buyer') {
+        dashboardURL = '/buyer/dashboard';
+    }  else if (foundUser.role === 'goverment') {
+        dashboardURL = '/buyer/goverment/dashboard';
+    }
+    else {
+        // If the role is not specified or invalid, you can handle it accordingly
+        return next(new BadRequestError("Invalid user role!"));
+    }
 
-    res.status(200).json({ message: 'User logged in!', token});
-
-   
+    res.status(200).json({ message: 'User logged in!', token, dashboardURL });
 });
+
 
 export const ForgotPassword = asyncWrapper(async (req, res, next) => {
     // Validation

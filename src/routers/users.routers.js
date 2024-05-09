@@ -38,7 +38,7 @@ userRouter.use(passport.initialize());
 userRouter.use(passport.session());
 passport.use(new GoogleStrategy({
     clientID: configuration.clientID,
-    clientSecret: configuration.clientSecret,
+    clientSecret: configuration.client,
     callbackURL: configuration.callbackURL
   },
   async function(accessToken, refreshToken, profile, done) {

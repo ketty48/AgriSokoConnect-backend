@@ -1,5 +1,6 @@
-import dotenv from 'dotenv'
-dotenv.config()
+import dotenv from 'dotenv';
+dotenv.config();
+
 const Configs = {
     MONGODB_CONNECTION_STRING: process.env.MONGODB_URI,
     CLIENT_APP: process.env.CLIENT_APP || '',
@@ -8,6 +9,6 @@ const Configs = {
     JWT_EXPIRES_IN: process.env.EXPIRATION,
     JWT_REFRESH_EXPIRES_IN: process.env.JWT_REFRESH_EXPIRES_IN,
     JWT_REFRESH_COOKIE_NAME: process.env.JWT_REFRESH_COOKIE_NAME,
-}
+};
 
 export default Configs;

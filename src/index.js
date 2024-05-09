@@ -8,6 +8,7 @@ import configurations from "./configs/index.js";
 import Routers from "./routers/index.js";
 
 
+
 // const corsOptions = {
 //     allowedHeaders: ["Authorization","Content-Type"],
 //     methods: ["GET", "POST", "UPDATE" ],

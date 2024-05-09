@@ -1,8 +1,14 @@
 import express from 'express';
+import dotenv from 'dotenv'
+dotenv.config()
 const userRouter = express.Router();
 import { SignUp, SignIn, ValidateOpt, ForgotPassword, ResetPassword} from '../controllers/users.controller.js';
 import { signUpValidations, signInValidations, otpValidation, forgotPasswordValidation, resetPasswordValidation } from '../utils/validation.js';
 import configuration from '../configs/index.js'
+import cors from 'cors'
+import session from 'express-session'
+import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
+import passport from 'passport'
 userRouter.post('/signup', signUpValidations, SignUp);
 userRouter.post('/signin', signInValidations, SignIn);
 userRouter.post('/verify', otpValidation, ValidateOpt);
@@ -37,7 +43,7 @@ userRouter.get('/dashboard', (req, res) => {
 userRouter.use(passport.initialize());
 userRouter.use(passport.session());
 passport.use(new GoogleStrategy({
-    clientID: configuration.clientID,
+    clientID: process.env.clientID,
     clientSecret: configuration.client,
     callbackURL: configuration.callbackURL
   },
@@ -84,7 +90,7 @@ passport.serializeUser(function(user, done) {
 
 passport.deserializeUser(function(id, done) {
     UserModel.findById(id, function(err, user) {
-        done(err, user); // Deserialize the user object
+        done(err, user); 
     });
 });
 

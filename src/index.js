@@ -12,7 +12,7 @@ import swaggerDocument from "./docs/swagger.json" assert { type: "json" };
 const corsOptions = {
     allowedHeaders: ["Authorization","Content-Type"],
     methods: ["GET", "POST", "UPDATE" ],
-    // origin: ["http://192.168.1.150:8080", "//https://contact-app-client-xbck.onrender.com/"],
+    origin: ["https://agrisoko-connect-platform.netlify.app/"],
 }
 
 const app = express();

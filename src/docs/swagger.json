@@ -1,8 +1,8 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "Financial Tracker",
-    "description": "This is the API Specification for the financial tracking app backend server.",
+    "title": "AgriSokoConnect",
+    "description": "This is the API Specification for the AgriSokoConnect platform backend server.",
     "contact": {
       "email": "ketymagnifique@gmail.com"
     },
@@ -19,11 +19,11 @@
   "basePath": "/",
   "servers": [
     {
-      "url": "http://localhost:5000",
+      "url": "http://localhost:8060",
       "description": "Local server"
     },
     {
-      "url": "https://financial-tracker.onrender.com",
+      "url": "https://AgriSokoConnect.onrender.com",
       "description": "Production server"
     }
   ],
@@ -32,7 +32,7 @@
     "https"
   ],
   "paths": {
-    "/financial/user/signup": {
+    "/AgriSoko/user/signup": {
       "post": {
         "summary": "Create account",
         "description": "Create a new account",
@@ -55,34 +55,12 @@
         }
       }
     },
-    "/financial/user/signin": {
-      "post": {
-        "summary": "Login",
-        "description": "Login to the application",
-        "tags": ["Authentication"],
-        "parameters": [
-          {
-            "in": "body",
-            "name": "body",
-            "schema": {
-              "$ref": "#/definitions/account"
-            },
-            "required": true,
-            "description": "Credentials object"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Login successful"
-          }
-        }
-      }
-    },
-    "/financial/user/verify": {
+
+    "/AgriSoko/user/verify": {
       "post": {
         "summary": "Verify",
         "description": "Verify your account",
-        "tags": ["Otp"],
+        "tags": ["Authentication"],
         "parameters": [
           {
             "in": "body",
@@ -101,39 +79,35 @@
         }
       }
     },
-    "/financial/user/update": {
-      "put": {
-        "summary": "Update your account",
-        "description": "update account",
+    "/AgriSoko/user/signin": {
+      "post": {
+        "summary": "Login",
+        "description": "Login to the application",
         "tags": ["Authentication"],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
         "parameters": [
           {
             "in": "body",
             "name": "body",
             "schema": {
-              "$ref": "#/definitions/account"
+              "$ref": "#/definitions/login"
             },
             "required": true,
-            "description": "Account object"
+            "description": "Credentials object"
           }
         ],
         "responses": {
-          "201": {
-            "description": "Account updated successfully"
+          "200": {
+            "description": "Login successful"
           }
         }
       }
     },
-    "/financial/user/forgotPassword": {
+  
+    "/AgriSoko/user/forgotPassword": {
       "post": {
         "summary": "Forgot password",
         "description": "Forgot password",
-        "tags": ["Forgot Password"],
+        "tags": ["Authentication"],
         "parameters": [
           {
             "in": "body",
@@ -152,11 +126,11 @@
         }
       }
     },
-    "/financial/user/resetPassword": {
+    "/AgriSoko/user/resetPassword": {
       "post": {
         "summary": "Reset",
         "description": "Reset Password",
-        "tags": ["Reset"],
+        "tags": ["Authentication"],
         "parameters": [
           {
             "in": "body",
@@ -174,26 +148,101 @@
           }
         }
       }
+    },
+    "/AgriSoko/profile/info": {
+      "get": {
+        "summary": "your profile",
+        "description": "your profile",
+        "tags": ["Profile"],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "id",
+            "schema": {
+              "$ref": "#/definitions/profile"
+            },
+            "required": true,
+            "description": "profile object"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "profile updated successfully"
+          }
+        }
+      }
+    },
+    "/AgriSoko/profile/update": {
+      "put": {
+        "summary": "update your profile",
+        "description": "update your profile",
+        "tags": ["Profile"],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/profile"
+            },
+            "required": true,
+            "description": "profile object"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "profile updated"
+          }
+        }
+      }
     }
   },
   "definitions": {
     "account": {
       "type": "object",
       "properties": {
+        "fullName": {
+          "type": "string"
+        },
         "email": {
+          "type": "string"
+        },
+        "userName": {
           "type": "string"
         },
         "password": {
           "type": "string",
           "minLength": 6
         },
+        "confirmPassword": {
+          "type": "string"
+        },
       
-        "income": {
+        "address1": {
+          "type": "string"
+        },
+        "PhoneNumber": {
           "type": "number"
+        },
+        "role": {
+          "type": "string",
+          "enum": ["goverment", "farmer", "buyer"],
+          "default": "farmer"
         }
+        
       },
-      "required": ["email", "password"]
+      "required": ["fullName","email","userName", "password","confirmPassword","address1","phoneNumber","role"]
     },
+
     "otp": {
       "type": "object",
       "properties": {
@@ -202,6 +251,18 @@
         }
       },
       "required": ["otp"]
+    },
+    "login": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      },
+      "required": ["email","password"]
     },
     "forgot": {
       "type": "object",
@@ -228,64 +289,31 @@
       },
       "required": ["token", "password"]
     },
-    "expenses": {
+    "profile": {
       "type": "object",
       "properties": {
-        "category": {
+        "fullName": {
           "type": "string"
         },
-        "amount": {
+        "email": {
+          "type": "string"
+        },
+      
+        "address1": {
+          "type": "string"
+        },
+        "address2": {
+          "type": "string"
+        },
+        "PhoneNumber": {
           "type": "number"
-        },
-        "description": {
-          "type": "string"
-        },
-        "date": {
-          "type": "string",
-          "format": "date-time"
         }
+  
+        
       },
-      "required": ["category", "amount", "description", "date"]
-    },
-    "goals": {
-      "type": "object",
-      "properties": {
-        "title": {
-          "type": "string"
-        },
-        "targetAmount": {
-          "type": "number"
-        },
-        "deadline": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "achieved": {
-          "type": "boolean"
-        }
-      },
-      "required": ["title", "targetAmount", "deadline", "achieved"]
-    },
-    "budgets": {
-      "type": "object",
-        "properties": {
-          "budgets": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "category": {
-                  "type": "string"
-                },
-                "limit": {
-                  "type": "number"
-                }
-              }
-            }
-          }
-        },
-        "required": ["category", "limit"]
-      }
+      "required": ["fullName","email","address1","address2","phoneNumber","role"]
+    }
+
   },
   "securityDefinitions": {
     "BearerAuth": {

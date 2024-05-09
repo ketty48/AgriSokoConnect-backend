@@ -11,6 +11,7 @@ import Token from "../models/authToken.model.js";
 import configuration from '../configs/index.js'
 import sendTokenCookie from "../middlewares/cookie.js";
 import profileModel from "../models/editProfile.model.js"
+import userModel from "../models/users.model.js";
 
 
 
@@ -59,7 +60,8 @@ export const SignUp = asyncWrapper(async (req, res, next) => {
     const newProfile = new profileModel({
         user: savedUser._id,
         fullName: req.body.fullName,
-        address1: req.body.address,
+        email: savedUser.email,
+        address1: req.body.address1,
         PhoneNumber: req.body.PhoneNumber,
    
     });
@@ -153,6 +155,9 @@ export const SignIn = asyncWrapper(async (req, res, next) => {
     res.status(200).json({ message: 'User logged in!', token, dashboardURL });
 });
 
+export const loginWithGoogle=asyncWrapper(async(req,res,next)=>{
+
+})
 
 export const ForgotPassword = asyncWrapper(async (req, res, next) => {
     // Validation
@@ -177,7 +182,7 @@ export const ForgotPassword = asyncWrapper(async (req, res, next) => {
         expirationDate: new Date().getTime() + (60 * 1000 * 5),
     });
 
-    const link = `http://localhost:5000/reset-password?token=${token}&id=${foundUser.id}`;
+    const link = `http://localhost:8060/reset-password?token=${token}&id=${foundUser.id}`;
     const emailBody = `Click on the link bellow to reset your password\n\n${link}`;
 
     await sendEmail(req.body.email, "Reset your password", emailBody);
@@ -231,21 +236,4 @@ export const ResetPassword = asyncWrapper(async (req, res, next) => {
             message: "Your password has been reset!",
         })
     }
-});
-export const updateUser = asyncWrapper(async (req, res, next) => {
-    const foundUser = await UserModel.findById(req.user.id);
-    if (!foundUser) {
-        return next(new BadRequestError("User not found!"));
-    }
-    
-    const updatedUser = await UserModel.findByIdAndUpdate(req.user.id, req.body, { new: true });
-
-    if (!updatedUser) {
-        return next(new InternalServerError("Failed to update user!"));
-    }
-
-    return res.status(200).json({
-        message: "User updated!",
-        user: updatedUser
-    });
 });

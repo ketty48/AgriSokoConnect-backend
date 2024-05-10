@@ -6,22 +6,15 @@ const UserSchema = new Schema({
         required: true,
         unique: true,
     },
-    userName: {
-        type: String,
-        required: true,
-    },
     password: {
         type: String,
         required: true
     },
     role: {
-        type:"string",
-        enum: {
-            values: ["goverment","farmer", "buyer","admin"],
-            message: "{VALUE} is not a valid status",
-        },
-        default: "Farmer",
-    },
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Role',
+        required: true
+      },
   
 
     otp: {

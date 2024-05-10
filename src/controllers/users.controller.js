@@ -11,7 +11,7 @@ import Token from "../models/authToken.model.js";
 import configuration from '../configs/index.js'
 import sendTokenCookie from "../middlewares/cookie.js";
 import profileModel from "../models/editProfile.model.js"
-import userModel from "../models/users.model.js";
+import RoleModel from "../models/role.model.js";
 
 
 
@@ -31,7 +31,15 @@ export const SignUp = asyncWrapper(async (req, res, next) => {
     const foundUser = await UserModel.findOne({ email: req.body.email });
     if (foundUser) {
         return next(new BadRequestError("Email already in use"));
-    };
+    }
+
+    // Find role by name
+    const role = await RoleModel.findOne({ name: req.body.role });
+
+    // If role not found, handle error
+    if (!role) {
+        return next(new BadRequestError("Invalid role selected"));
+    }
 
     // Hashing the user password
     const hashedPassword = await bcryptjs.hashSync(req.body.password, 10);
@@ -45,11 +53,12 @@ export const SignUp = asyncWrapper(async (req, res, next) => {
         email: req.body.email,
         userName: req.body.userName,
         password: hashedPassword,
-        role: req.body.role, 
+        role: role._id, // Save role ID instead of role name
         otp: otp,
         otpExpires: otpExpirationDate,
     });
 
+    // Save user to database
     const savedUser = await newUser.save();
 
     if (!savedUser) {

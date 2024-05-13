@@ -26,7 +26,7 @@ export const addStock = asyncWrapper(async (req, res, next) => {
 
   const user = await userModel.findById(userId);
   const recipientEmail = user.email;
-  const subject = "Stock Added Notification";
+  const subject = "Stock Added ";
   const body = `Dear ${user.userName},\n\nA new stock item (${newStock.NameOfProduct}) has been added successfully. Quantity: ${newStock.quantity}, Price per Ton: ${newStock.pricePerTon}, Total Price: ${newStock.totalPrice}.\n\n`;
 
   try {

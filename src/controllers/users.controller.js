@@ -34,7 +34,7 @@ export const SignUp = asyncWrapper(async (req, res, next) => {
     }
 
     // Find role by name
-    const role = await RoleModel.findOne({ name: req.body.role });
+    const role = await RoleModel.findOne({ role: req.body.role });
 
     // If role not found, handle error
     if (!role) {

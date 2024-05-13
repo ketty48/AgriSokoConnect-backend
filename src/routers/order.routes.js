@@ -13,4 +13,4 @@ orderRouter.delete('/delete/:id', deleteStock);
 orderRouter.get('/retrieve/:id', getStockByID);
 
 export default orderRouter;
-// 
+ 

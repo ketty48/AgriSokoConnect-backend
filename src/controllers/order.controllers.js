@@ -2,6 +2,8 @@ import orderModel from "../models/order.model.js";
 import asyncWrapper from "../middlewares/async.js";
 import { NotFoundError, BadRequestError } from "../errors/index.js";
 import { validationResult } from "express-validator";
+import { sendEmail } from "../utils/sendEmail.js";
+import userModel from "../models/users.model.js";
 
 export const addOrder = asyncWrapper(async (req, res, next) => {
   const errors = validationResult(req);
@@ -9,7 +11,7 @@ export const addOrder = asyncWrapper(async (req, res, next) => {
     throw new BadRequestError(errors.array()[0].msg);
   }
 
-  const { user, stock, quantity, quality, phoneNumber, Address } = req.body;
+  const { stock, quantity, quality, phoneNumber, Address } = req.body;
   const userId = req.user.id;
 
   const newOrder = new orderModel({
@@ -22,6 +24,22 @@ export const addOrder = asyncWrapper(async (req, res, next) => {
   });
 
   await newOrder.save();
+
+  const user = await userModel.findById(userId);
+  if (!user || !user.email) {
+    throw new NotFoundError("User not found or missing email");
+  }
+
+  const recipientEmail = user.email;
+  const subject = "Order Received Notification";
+  const body = `Dear ${user.userName},\n\nA new order (${newOrder.stock}) has been received successfully. Quantity: ${newOrder.quantity}, Quality: ${newOrder.quality}, Contact Number: ${newOrder.phoneNumber}, Delivery Address: ${newOrder.Address}.\n\n`;
+
+  try {
+    await sendEmail(recipientEmail, subject, body);
+    console.log('Notification email sent successfully');
+  } catch (error) {
+    console.error('Error sending notification email:', error);
+  }
 
   res.status(201).json({
     status: "Order added successfully",
@@ -80,6 +98,22 @@ export const updateStock = asyncWrapper(async (req, res, next) => {
       return next(new NotFoundError("Stock not found"));
     }
     const updatedStock = await stockModel.findByIdAndUpdate(stockId, req.body, { new: true });
+
+  
+    const user = await userModel.findById(userId);
+    if (!user || !user.email) {
+      throw new NotFoundError("User not found or missing email");
+    }
+    const recipientEmail = user.email;
+    const subject = "Stock Updated Notification";
+    const body = `Dear ${user.userName},\n\nThe stock item (${updatedStock.NameOfProduct}) has been updated successfully. New Quantity: ${updatedStock.quantity}, New Price: ${updatedStock.totalPrice}.\n\n`;
+    try {
+      await sendEmail(recipientEmail, subject, body);
+      console.log('Notification email sent successfully');
+    } catch (error) {
+      console.error('Error sending notification email:', error);
+    }
+
     res.status(200).json({
       status: "Stock updated",
       stock: updatedStock

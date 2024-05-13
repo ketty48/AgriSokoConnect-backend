@@ -6,7 +6,7 @@ import {requireAuth} from '../middlewares/authorization.js'
 stockRouter.use(requireAuth)
 stockRouter.post('/add', addStockValidations, addStock);
 stockRouter.get('/retrieve', getStock);
-stockRouter.get('/update/:id', addStockValidations,updateStock);
+stockRouter.put('/update/:id', addStockValidations,updateStock);
 stockRouter.delete('/delete/:id', deleteStock);
 stockRouter.get('/retrieve/:id',getStockByID)
 

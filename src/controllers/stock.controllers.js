@@ -87,13 +87,14 @@ export const updateStock = asyncWrapper(async (req, res, next) => {
   }
 
   const { NameOfProduct, Description, pricePerTon, quantity } = req.body;
-  const userId = req.User.id;
+  const userId = req.user.id;
 
   // Calculate total price
   const totalPrice = pricePerTon * quantity;
-
+  console.log("Updating stock with ID:", req.params.id);
+  console.log("User ID:", userId);
   const stock = await stockModel.findOneAndUpdate(
-    { _id: req.params.id, userId: userId },
+    { _id: req.params.id, user: userId },
     {
       NameOfProduct,
       Description,
@@ -103,7 +104,7 @@ export const updateStock = asyncWrapper(async (req, res, next) => {
     },
     { new: true } // Return the updated document
   );
-
+  console.log("updated stock",stock)
   if (!stock) {
     throw new NotFoundError("Stock not found");
   }

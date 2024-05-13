@@ -17,38 +17,36 @@ userRouter.post('/signin', signInValidations, SignIn);
 userRouter.post('/verify', otpValidation, ValidateOpt);
 userRouter.post('/forgotPassword', forgotPasswordValidation, ForgotPassword)
 userRouter.post('/resetPassword', resetPasswordValidation, ResetPassword);
-userRouter.use(cors());
 userRouter.use(session({
-    secret: configuration.JWT_SECRET,
-    resave: false,
-    saveUninitialized: true
+  secret: configuration.JWT_SECRET,
+  resave: false,
+  saveUninitialized: true
 }))
-
-userRouter.get('/auth/google',
-
-  passport.authenticate('google', { scope: ['profile', 'email'] }));
-
-userRouter.get('/auth/google/callback',
-  passport.authenticate('google', { failureRedirect: '/login' }),
-  function(req, res) {
-    res.redirect('/dashboard');
-  });
-
-userRouter.get('/dashboard', (req, res) => {
-  if (req.isAuthenticated()) {
-    res.send('Dashboard');
-  } else {
-    res.redirect('/login');
-  }
-});
 userRouter.use(passport.initialize());
 userRouter.use(passport.session());
+userRouter.get('/success', (req, res) => res.send(userProfile));
+userRouter.get('/error', (req, res) => res.send("error logging in"));
+
+passport.serializeUser(function(user, cb) {
+  cb(null, user);
+});
+
+passport.deserializeUser(function(obj, cb) {
+  cb(null, obj);
+});
+
+
+
+
 passport.use(new GoogleStrategy({
-    clientID: process.env.clientID,
-    clientSecret: configuration.client,
-    callbackURL: configuration.callbackURL
+    clientID: process.env.CLIENT_ID,
+    clientSecret: process.env.CLIENT_SECRET,
+    callbackURL: process.env.CALL_BACK_URL
   },
   async function(accessToken, refreshToken, profile, done) {
+    userProfile=profile;
+
+
     try {
       let user = await UserModel.findOne({ googleId: profile.id });
 
@@ -85,15 +83,22 @@ passport.use(new GoogleStrategy({
   }
 ));
 
-passport.serializeUser(function(user, done) {
-    done(null, user.id); // Serialize the user ID
-});
+userRouter.get('/auth/google',
 
-passport.deserializeUser(function(id, done) {
-    UserModel.findById(id, function(err, user) {
-        done(err, user); 
-    });
-});
+  passport.authenticate('google', { scope: ['profile', 'email'] }));
 
+userRouter.get('/auth/google/callback',
+  passport.authenticate('google', { failureRedirect: '/login' }),
+  function(req, res) {
+    res.redirect('/dashboard');
+  });
+
+userRouter.get('/dashboard', (req, res) => {
+  if (req.isAuthenticated()) {
+    res.send('Dashboard');
+  } else {
+    res.redirect('/login');
+  }
+});
 
 export default userRouter;

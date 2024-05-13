@@ -203,7 +203,7 @@
         }
       }
     },
-    "/AgriSoko/stock/create":{
+    "/AgriSoko/stock/add":{
       "post":{
         "summary": "create stock",
         "description": "create stock",
@@ -231,35 +231,33 @@
         }
       }
     },
-    "/AgriSoko/stock/get":{
-      "get":{
-        "summary": "get stock",
-        "description": "get stock",
-        "tags": ["Stock"],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "in": "query",
-            "name": "id",
-            "schema": {
-              "$ref": "#/definitions/stock"
-            },
-            "required": true,
-            "description": "stock object"
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "stock created"
+    "/AgriSoko/stock/retrieve": {
+    "get": {
+      "summary": "Get all stocks",
+      "description": "Retrieve all stocks",
+      "tags": ["Stock"],
+      "security": [
+        {
+          "BearerAuth": []
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Successful operation",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/Stock"
+                }
+              }
+            }
           }
         }
       }
-    },
-    "/AgriSoko/stock/get/{id}": {
+    }},
+    "/AgriSoko/stock/retrieve/{id}": {
       "get": {
         "summary": "Get stock by ID",
         "description": "Retrieve details of a specific stock by its ID",
@@ -292,7 +290,7 @@
       }
     }
 ,    
-    "/AgriSoko/stock/update{id}": {
+    "/AgriSoko/stock/update/{id}": {
       "put": {
         "summary": "Update stock",
         "description": "Update existing stock details",

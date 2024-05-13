@@ -4,7 +4,7 @@ import { NotFoundError, BadRequestError } from "../errors/index.js";
 import { validationResult } from "express-validator";
 import { sendEmail } from "../utils/sendEmail.js";
 import userModel from "../models/users.model.js";
-
+import stockModel from "../models/stock.model.js";
 export const addOrder = asyncWrapper(async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -14,13 +14,23 @@ export const addOrder = asyncWrapper(async (req, res, next) => {
   const { stock, quantity, quality, phoneNumber, Address } = req.body;
   const userId = req.user.id;
 
+  // Retrieve the stock details to calculate the total price
+  const selectedStock = await stockModel.findById(stock);
+  if (!selectedStock) {
+    throw new NotFoundError("Selected stock not found");
+  }
+
+  // Calculate the total price based on the quantity ordered and the stock price
+  const totalPrice = selectedStock.price * quantity;
+
   const newOrder = new orderModel({
-    user: userId, // Use userId here
+    user: userId,
     stock,
     quantity,
     quality,
     phoneNumber,
     Address,
+    totalPrice, // Add totalPrice to the order
   });
 
   await newOrder.save();
@@ -32,7 +42,7 @@ export const addOrder = asyncWrapper(async (req, res, next) => {
 
   const recipientEmail = user.email;
   const subject = "Order Received Notification";
-  const body = `Dear ${user.userName},\n\nA new order (${newOrder.stock}) has been received successfully. Quantity: ${newOrder.quantity}, Quality: ${newOrder.quality}, Contact Number: ${newOrder.phoneNumber}, Delivery Address: ${newOrder.Address}.\n\n`;
+  const body = `Dear ${user.userName},\n\nA new order (${selectedStock.NameOfProduct}) has been received successfully. Quantity: ${quantity}, Quality: ${quality}, Contact Number: ${phoneNumber}, Delivery Address: ${Address}. Total Price: ${totalPrice}.\n\n`;
 
   try {
     await sendEmail(recipientEmail, subject, body);

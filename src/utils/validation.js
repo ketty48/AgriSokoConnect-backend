@@ -44,7 +44,7 @@ body("NameOfProduct", "Name of product is required").not().isEmpty(),
 ]
 
     export const addOrderValidations = [
-        body("user", "User ID must be provided").not().isEmpty(),
+       
         body("stock", "Stock ID must be provided").not().isEmpty(),
         body("quantity", "Quantity is required").not().isEmpty(),
         body("quality", "Quality is required").not().isEmpty(),

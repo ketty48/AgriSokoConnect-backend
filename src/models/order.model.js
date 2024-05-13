@@ -10,6 +10,7 @@ const  orderSchema = new Schema({
         ref:'stock',
         required: false
      },
+     
      quantity:{
         type: Number,
         required: false

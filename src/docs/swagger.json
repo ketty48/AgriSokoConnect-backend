@@ -147,6 +147,46 @@
         }
       }
     },
+    "/AgriSoko/user/auth/google":{
+      "get": {
+        "summary": "Google OAuth2.0 authentication",
+        "description": "Authenticate with Google",
+        "tags": ["Authentication"],
+        "responses": {
+          "200": {
+            "description": "Redirect to Google login page"
+           }
+        }
+      }
+    },
+    "/AgriSoko/user/auth/google/callback": {
+      "get": {
+        "summary": "Google OAuth2.0 callback",
+        "description": "Callback endpoint for Google OAuth2.0 authentication",
+        "tags": ["Authentication"],
+        "responses": {
+          "200": {
+            "description": "Redirect to dashboard upon successful authentication"
+          }
+        }
+      }
+    },
+    "/AgriSoko/user/role":{
+      "get": {
+        "summary": "Get roles",
+        "description": "Get All roles",
+        "tags": ["Roles"],
+    
+        "responses": {
+          "200": {
+            "description": "roles Fetched successfully"
+          },
+          "404": {
+            "description": "Error for fetching roles"
+          }
+        }
+      }
+    },
     "/AgriSoko/profile/info": {
       "get": {
         "summary": "your profile",
@@ -203,46 +243,9 @@
         }
       }
     },
-    "/AgriSoko/user/auth/google": {
-      "get": {
-        "summary": "Google OAuth2.0 authentication",
-        "description": "Authenticate with Google",
-        "tags": ["Authentication"],
-        "responses": {
-          "200": {
-            "description": "Redirect to Google login page"
-          }
-        }
-      }
-    },
-    "/AgriSoko/user/auth/google/callback": {
-      "get": {
-        "summary": "Google OAuth2.0 callback",
-        "description": "Callback endpoint for Google OAuth2.0 authentication",
-        "tags": ["Authentication"],
-        "responses": {
-          "200": {
-            "description": "Redirect to dashboard upon successful authentication"
-          }
-        }
-      }
-    },
-    "/AgriSoko/user/role": {
-      "get": {
-        "summary": "Get roles",
-        "description": "Get All roles",
-        "tags": ["Roles"],
-    
-        "responses": {
-          "200": {
-            "description": "roles Fetched successfully"
-          },
-          "404": {
-            "description": "Error for fetching roles"
-          }
-        }
-      }
-    },
+
+
+   
     "/AgriSoko/stock/add":{
       "post":{
         "summary": "create stock",

@@ -242,6 +242,163 @@
           }
         }
       }
+    },
+    "/AgriSoko/stock/add":{
+      "post":{
+        "summary": "create stock",
+        "description": "create stock",
+        "tags": ["Stock"],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/stock"
+            },
+            "required": true,
+            "description": "stock object"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "stock created"
+          }
+        }
+      }
+    },
+    "/AgriSoko/stock/retrieve": {
+    "get": {
+      "summary": "Get all stocks",
+      "description": "Retrieve all stocks",
+      "tags": ["Stock"],
+      "security": [
+        {
+          "BearerAuth": []
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Successful operation",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/Stock"
+                }
+              }
+            }
+          }
+        }
+      }
+    }},
+    "/AgriSoko/stock/retrieve/{id}": {
+      "get": {
+        "summary": "Get stock by ID",
+        "description": "Retrieve details of a specific stock by its ID",
+        "tags": ["Stock"],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "type": "string",
+            "required": true,
+            "description": "ID of the stock to retrieve"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Stock found",
+            "schema": {
+              "$ref": "#/definitions/stock"
+            }
+          },
+          "404": {
+            "description": "Stock not found"
+          }
+        }
+      }
+    }
+,
+    "/AgriSoko/stock/update/{id}": {
+      "put": {
+        "summary": "Update stock",
+        "description": "Update existing stock details",
+        "tags": ["Stock"],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "type": "string",
+            "required": true,
+            "description": "ID of the stock to be updated"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/stock"
+            },
+            "required": true,
+            "description": "Updated stock object"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Stock updated successfully"
+          },
+          "404": {
+            "description": "Stock not found"
+          },
+          "400": {
+            "description": "Bad request: Invalid data provided"
+          }
+        }
+      }
+    },
+    "/AgriSoko/stock/delete/{id}": {
+      "delete": {
+        "summary": "Delete stock",
+        "description": "Delete an existing stock by its ID",
+        "tags": ["Stock"],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "type": "string",
+            "required": true,
+            "description": "ID of the stock to be deleted"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Stock deleted successfully"
+          },
+          "404": {
+            "description": "Stock not found"
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -338,6 +495,36 @@
         }
       },
       "required": ["fullName","email","address1","address2","PhoneNumber"]
+    },
+    "stock": {
+      "type": "object",
+      "properties": {
+        "NameOfProduct": {
+          "type": "string",
+          "description": "Name of the product"
+        },
+        "Description": {
+          "type": "string",
+          "description": "Description of the product"
+        },
+        "pricePerTon": {
+          "type": "number",
+          "description": "Price per ton of the product"
+        },
+        "quantity": {
+          "type": "number",
+          "description": "Quantity of the product"
+        },
+        "totalPrice": {
+          "type": "number",
+          "description": "Total price of the stock (pricePerTon * quantity)"
+        },
+        "user": {
+          "type": "string",
+          "description": "ID of the user who owns the stock"
+        }
+      },
+      "required": ["NameOfProduct", "Description", "pricePerTon", "quantity", "user"]
     }
   },
   "securityDefinitions": {

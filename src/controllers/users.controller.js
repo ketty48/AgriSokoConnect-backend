@@ -125,7 +125,6 @@ export const ValidateOpt = asyncWrapper(async (req, res, next) => {
 });
 
 export const SignIn = asyncWrapper(async (req, res, next) => {
-
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return next(new BadRequestError(errors.array()[0].msg));
@@ -134,9 +133,8 @@ export const SignIn = asyncWrapper(async (req, res, next) => {
     const foundUser = await UserModel.findOne({ email: req.body.email });
     
     if (!foundUser) {
-        res.status(404).send({error:'Invalid email or password'});
         return next(new BadRequestError("Invalid email or password!"));
-    };
+    }
 
     if (!foundUser.verified) {
         return next(new BadRequestError("Your account is not verified!"));
@@ -146,27 +144,37 @@ export const SignIn = asyncWrapper(async (req, res, next) => {
     if (!isPasswordVerified) {
         return next(new BadRequestError("Invalid email or password!"));
     }
-    const token = jwt.sign({ id: foundUser.id, email: foundUser.email, role: foundUser.role }, configuration.JWT_SECRET, { expiresIn: "1h" });
-    sendTokenCookie(token, res);
-    let dashboardURL;
-    if (foundUser.role === 'farmer') {
-        dashboardURL = '/farmer/dashboard';
-    } else if (foundUser.role === 'buyer') {
-        dashboardURL = '/buyer/dashboard';
-    }  else if (foundUser.role === 'goverment') {
-        dashboardURL = '/buyer/goverment/dashboard';
-    }
-    else {
-        // If the role is not specified or invalid, you can handle it accordingly
+
+    // Retrieve the role document based on the role ID stored in the user document
+    const role = await RoleModel.findById(foundUser.role);
+
+    // If role not found, handle error
+    if (!role) {
         return next(new BadRequestError("Invalid user role!"));
+    }
+    
+    const token = jwt.sign({ id: foundUser.id, email: foundUser.email, role: role.role }, configuration.JWT_SECRET, { expiresIn: "1h" });
+    sendTokenCookie(token, res);
+
+    let dashboardURL;
+    switch (role.role) {
+        case 'farmer':
+            dashboardURL = '/farmer/dashboard';
+            break;
+        case 'buyer':
+            dashboardURL = '/buyer/dashboard';
+            break;
+        case 'government':
+            dashboardURL = '/government/dashboard';
+            break;
+        default:
+            // If the role is not specified or invalid, return an error
+            return next(new BadRequestError("Invalid user role!"));
     }
 
     res.status(200).json({ message: 'User logged in!', token, dashboardURL });
 });
 
-export const loginWithGoogle=asyncWrapper(async(req,res,next)=>{
-
-})
 
 export const ForgotPassword = asyncWrapper(async (req, res, next) => {
     // Validation
@@ -230,13 +238,8 @@ export const ResetPassword = asyncWrapper(async (req, res, next) => {
         return next(new BadRequestError("User not found!"));
     };
 
-    // Deleting the user token
     await Token.deleteOne({ token: req.body.token });
-
-    // Harshing the user password
     const hashedPassword = await bcryptjs.hashSync(req.body.password, 10);
-
-    // Updating the user password
     foundUser.password = hashedPassword;
 
     const savedUser = await foundUser.save();

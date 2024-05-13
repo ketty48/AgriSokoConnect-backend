@@ -414,9 +414,7 @@
         "email": {
           "type": "string"
         },
-        "userName": {
-          "type": "string"
-        },
+    
         "password": {
           "type": "string",
           "minLength": 6
@@ -425,9 +423,7 @@
           "type": "string"
         },
       
-        "address1": {
-          "type": "string"
-        },
+      
         "PhoneNumber": {
           "type": "number"
         },
@@ -438,7 +434,7 @@
         }
         
       },
-      "required": ["fullName","email","userName", "password","confirmPassword","address1","phoneNumber","role"]
+      "required": ["fullName","email", "password","confirmPassword","phoneNumber","role"]
     },
 
     "otp": {

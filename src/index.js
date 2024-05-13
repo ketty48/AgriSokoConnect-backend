@@ -11,11 +11,13 @@ import swaggerUi from "swagger-ui-express";
 import swaggerDocument from "./docs/swagger.json" assert { type: "json" };
 //import swaggerDocumentation from "./docs/swagger.json";
 
+
 const corsOptions = {
     allowedHeaders: ["Authorization", "Content-Type"],
-    methods: ["GET", "POST", "PUT"], // Include PUT instead of UPDATE
-    origin: ["https://agrisoko-connect-platform.netlify.app", "https://accounts.google.com"], // Remove trailing slashes
-}
+    methods: ["GET", "POST", "PUT", "DELETE"], // Include DELETE if needed
+    origin: ["http://localhost:8060", "https://agrisoko-connect-platform.netlify.app"], // Update with your Swagger UI origin
+    credentials: true, // Allow sending cookies for authorization
+};
 
 const app = express();
 app.use(cors(corsOptions));

@@ -55,6 +55,7 @@
         }
       }
     },
+
     "/AgriSoko/user/verify": {
       "post": {
         "summary": "Verify",
@@ -101,6 +102,7 @@
         }
       }
     },
+  
     "/AgriSoko/user/forgotPassword": {
       "post": {
         "summary": "Forgot password",
@@ -243,9 +245,7 @@
         }
       }
     },
-
-
-   
+ 
     "/AgriSoko/stock/add":{
       "post":{
         "summary": "create stock",
@@ -414,6 +414,9 @@
         "email": {
           "type": "string"
         },
+        "userName": {
+          "type": "string"
+        },
         "password": {
           "type": "string",
           "minLength": 6
@@ -421,18 +424,23 @@
         "confirmPassword": {
           "type": "string"
         },
+      
+        "address1": {
+          "type": "string"
+        },
         "PhoneNumber": {
           "type": "number"
         },
         "role": {
           "type": "string",
-          "description": "ID of the role from the role model",
+          "enum": ["goverment", "farmer", "buyer"],
           "default": "farmer"
         }
+        
       },
-      "required": ["fullName", "email","password", "confirmPassword","PhoneNumber", "role"]
+      "required": ["fullName","email","userName", "password","confirmPassword","address1","phoneNumber","role"]
     },
-    
+
     "otp": {
       "type": "object",
       "properties": {
@@ -472,6 +480,7 @@
         "id":{
           "type": "string"
         },
+
         "password": {
           "type": "string"
         }
@@ -487,6 +496,7 @@
         "email": {
           "type": "string"
         },
+      
         "address1": {
           "type": "string"
         },
@@ -496,39 +506,12 @@
         "PhoneNumber": {
           "type": "number"
         }
+  
+        
       },
-      "required": ["fullName","email","address1","address2","PhoneNumber"]
-    },
-    "stock": {
-      "type": "object",
-      "properties": {
-        "NameOfProduct": {
-          "type": "string",
-          "description": "Name of the product"
-        },
-        "Description": {
-          "type": "string",
-          "description": "Description of the product"
-        },
-        "pricePerTon": {
-          "type": "number",
-          "description": "Price per ton of the product"
-        },
-        "quantity": {
-          "type": "number",
-          "description": "Quantity of the product"
-        },
-        "totalPrice": {
-          "type": "number",
-          "description": "Total price of the stock (pricePerTon * quantity)"
-        },
-        "user": {
-          "type": "string",
-          "description": "ID of the user who owns the stock"
-        }
-      },
-      "required": ["NameOfProduct", "Description", "pricePerTon", "quantity", "user"]
+      "required": ["fullName","email","address1","address2","phoneNumber","role"]
     }
+
   },
   "securityDefinitions": {
     "BearerAuth": {

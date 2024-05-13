@@ -1,5 +1,6 @@
-import dotenv from 'dotenv'
-dotenv.config()
+import dotenv from 'dotenv';
+dotenv.config();
+
 const Configs = {
     MONGODB_CONNECTION_STRING: process.env.MONGODB_URI,
     CLIENT_APP: process.env.CLIENT_APP || '',
@@ -14,3 +15,6 @@ const Configs = {
 }
 
 export default Configs;
+
+
+

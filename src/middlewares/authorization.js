@@ -24,7 +24,7 @@ const requireAuth = async (req, res, next) => {
         }
 
         // Attach the user to the request object for later use
-        req.user = user;
+        req.user = user 
 
         // Move to the next middleware or route handler
         next();

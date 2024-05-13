@@ -4,7 +4,12 @@ import mongoose from "mongoose";
 import configurations from "./configs/index.js";
 import Routers from "./routers/index.js";
 import swaggerUi from "swagger-ui-express";
+//import swaggerDocument from "./docs/swagger.json";
+
+//const swaggerDocument = require("./docs/swagger.json");
+//import swaggerUi from "swagger-ui-express/dist/swagger-ui-express";
 import swaggerDocument from "./docs/swagger.json" assert { type: "json" };
+//import swaggerDocumentation from "./docs/swagger.json";
 
 
 const corsOptions = {

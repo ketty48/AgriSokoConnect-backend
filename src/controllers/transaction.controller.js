@@ -9,11 +9,6 @@ export const createTransaction = asyncWrapper(async (req, res) => {
     const userId = req.user.id; // Assuming you have user id in request object
     const user = await User.findById(userId);
 
-    // Check if user has the role of "government"
-    if (user.role !== 'government') {
-        return res.status(403).json({ message: 'Access denied. Only government role can create a transaction.' });
-    }
-
     // Check if stock item exists
     const stockItem = await Stock.findById(stockId);
 
@@ -40,32 +35,28 @@ export const getAllTransactions = asyncWrapper(async (req, res) => {
 
 export const getAllFarmersWithStock = asyncWrapper(async (req, res) => {
     try {
-        console.log('Fetching users with roles...');
+        // console.log('Fetching users with roles...');
         const users = await User.find().populate('role').exec();
-        console.log('Fetched users:', users);
+        // console.log('Fetched users:', users);
 
         // Filter users to get only farmers
         const farmers = users.filter(user => user.role && user.role.role === 'farmer');
-        console.log('Filtered farmers:', farmers);
-
-        // Fetch profiles for farmers
-        console.log('Fetching profiles...');
+     
         const profiles = await Profile.find({ user: { $in: farmers.map(farmer => farmer._id) } }).exec();
-        console.log('Fetched profiles:', profiles);
+   
 
         // Retrieve stock items for each farmer by user ID
         const farmersWithStock = await Promise.all(profiles.map(async (profile) => {
-            console.log('Profile Data:', profile);
-            console.log('Processing farmer:', profile.fullName);
+           
 
             // Fetch stock items based on user ID
             const stockItems = await Stock.find({ user: profile.user }).exec();
-            console.log('Stock items for farmer', profile.fullName + ':', stockItems);
+           
 
             return { farmer: profile.fullName, stock: stockItems };
         }));
 
-        console.log('Farmers with stock:', farmersWithStock);
+ 
         res.json({ farmersWithStock });
     } catch (error) {
         console.error('Error fetching farmers with stock:', error);

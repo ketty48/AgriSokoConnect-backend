@@ -15,7 +15,7 @@ import swaggerDocument from "./docs/swagger.json" assert { type: "json" };
 const corsOptions = {
     allowedHeaders: ["Authorization", "Content-Type"],
     methods: ["GET", "POST", "PUT", "DELETE"], // Include DELETE if needed
-    origin: ["http://localhost:8060", "https://agrisoko-connect-platform.netlify.app","http://localhost:5173"], // Update with your Swagger UI origin
+    origin: ["http://localhost:8060", "https://agrisoko-connect-platform.netlify.app","http://localhost:5174","http://localhost:5173"], // Update with your Swagger UI origin
     credentials: true, // Allow sending cookies for authorization
 };
 

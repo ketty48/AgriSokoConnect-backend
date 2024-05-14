@@ -5,6 +5,7 @@ import tokenRouter from './authToken.routes.js';
 import stockRouter from './stock.routes.js';
 import profileRouter from './profile.routers.js';
 import orderRouter from './order.routes.js';
+import transactionRouter from './transaction.router.js'
 const router = express.Router();
 
 
@@ -13,5 +14,6 @@ router.use('/token', tokenRouter);
 router.use('/stock',stockRouter)
 router.use('/profile', profileRouter);
 router.use('/order', orderRouter);
+router.use('/transaction', transactionRouter)
 
 export default router;

@@ -1,15 +1,21 @@
-import Transaction from '../models/transaction.model.js'
-// Import asyncWrapper
+import Transaction from '../models/transaction.model.js';
 import asyncWrapper from "../middlewares/async.js";
-import stock from '../models/stock.model.js'
-import Farmer from '../models/users.model.js'
+import Stock from '../models/stock.model.js';
+import User from '../models/users.model.js';
+import Profile from '../models/editProfile.model.js'
 
+export const createTransaction = asyncWrapper(async (req, res) => {
+    const { stockId, quantity, date } = req.body;
+    const userId = req.user.id; // Assuming you have user id in request object
+    const user = await User.findById(userId);
 
- export const createTransaction = asyncWrapper(async (req, res) => {
-    const { stockId, quantity,date } = req.body;
+    // Check if user has the role of "government"
+    if (user.role !== 'government') {
+        return res.status(403).json({ message: 'Access denied. Only government role can create a transaction.' });
+    }
 
     // Check if stock item exists
-    const stockItem = await stock.findById(stockId);
+    const stockItem = await Stock.findById(stockId);
 
     if (!stockItem) {
         return res.status(404).json({ message: 'Stock item not found' });
@@ -20,10 +26,9 @@ import Farmer from '../models/users.model.js'
         stock: stockId,
         quantity,
         date,
-      
     });
 
-    await Transaction.save();
+    await transaction.save();
 
     res.status(201).json(transaction);
 });
@@ -34,18 +39,37 @@ export const getAllTransactions = asyncWrapper(async (req, res) => {
 });
 
 export const getAllFarmersWithStock = asyncWrapper(async (req, res) => {
+    try {
+        console.log('Fetching users with roles...');
+        const users = await User.find().populate('role').exec();
+        console.log('Fetched users:', users);
 
-    const farmers = await Farmer.find();
+        // Filter users to get only farmers
+        const farmers = users.filter(user => user.role && user.role.role === 'farmer');
+        console.log('Filtered farmers:', farmers);
 
-    // For each farmer, fetch their associated stock items
-    const farmersWithStock = await Promise.all(farmers.map(async (farmer) => {
-        const stockItems = await stock.find({ farmer: farmer._id });
-        return {
-            farmer: farmer.name,
-            stock: stockItems
-        };
-    }));
+        // Fetch profiles for farmers
+        console.log('Fetching profiles...');
+        const profiles = await Profile.find({ user: { $in: farmers.map(farmer => farmer._id) } }).exec();
+        console.log('Fetched profiles:', profiles);
 
-    res.json(farmersWithStock);
+        // Retrieve stock items for each farmer by user ID
+        const farmersWithStock = await Promise.all(profiles.map(async (profile) => {
+            console.log('Profile Data:', profile);
+            console.log('Processing farmer:', profile.fullName);
+
+            // Fetch stock items based on user ID
+            const stockItems = await Stock.find({ user: profile.user }).exec();
+            console.log('Stock items for farmer', profile.fullName + ':', stockItems);
+
+            return { farmer: profile.fullName, stock: stockItems };
+        }));
+
+        console.log('Farmers with stock:', farmersWithStock);
+        res.json({ farmersWithStock });
+    } catch (error) {
+        console.error('Error fetching farmers with stock:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
 });
 

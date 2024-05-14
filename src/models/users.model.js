@@ -11,7 +11,7 @@ const UserSchema = new Schema({
         required: true
     },
     role: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: 'Role',
         required: true
       },
@@ -29,7 +29,8 @@ const UserSchema = new Schema({
         type: Boolean,
         required: true,
         default: false
-    }
+    },
+
 }, {
     toJSON: {
         transform: (doc, ret) => {

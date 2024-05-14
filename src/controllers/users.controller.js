@@ -164,9 +164,12 @@ export const SignIn = asyncWrapper(async (req, res, next) => {
         case 'buyer':
             dashboardURL = '/buyer/dashboard';
             break;
-        case 'government':
+        case 'goverment':
             dashboardURL = '/government/dashboard';
             break;
+            case 'admin':
+                dashboardURL = '/admin/dashboard';
+                break;
         default:
             // If the role is not specified or invalid, return an error
             return next(new BadRequestError("Invalid user role!"));

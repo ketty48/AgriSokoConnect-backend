@@ -27,6 +27,7 @@ const ProfileSchema = new Schema({
         type: Number,
         required: true,
     },
+    
 
 }, {
 

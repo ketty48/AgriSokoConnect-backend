@@ -402,7 +402,162 @@
           }
         }
       }
+    },
+    "/AgriSoko/order/create": {
+      "post": {
+        "summary": "Create order",
+        "description": "Create a new order",
+        "tags": ["Order"],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Order object",
+            "schema": {
+              "$ref": "#/definitions/OrderCreate"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Order created"
+          }
+        }
+      }
+    },
+    "/AgriSoko/order/retrieve": {
+      "get": {
+        "summary": "Retrieve all orders",
+        "description": "Retrieve all orders",
+        "tags": ["Order"],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Order"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/AgriSoko/order/retrieve/{id}": {
+      "get": {
+        "summary": "Get order by ID",
+        "description": "Retrieve details of a specific order by its ID",
+        "tags": ["Order"],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "type": "string",
+            "required": true,
+            "description": "ID of the order to retrieve"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Order found",
+            "schema": {
+              "$ref": "#/definitions/Order"
+            }
+          },
+          "404": {
+            "description": "Order not found"
+          }
+        }
+      }
+    },
+    "/AgriSoko/order/update/{id}": {
+      "put": {
+        "summary": "Update order",
+        "description": "Update existing order details",
+        "tags": ["Order"],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "type": "string",
+            "required": true,
+            "description": "ID of the order to be updated"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/OrderCreate"
+            },
+            "required": true,
+            "description": "Updated order object"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Order updated successfully"
+          },
+          "404": {
+            "description": "Order not found"
+          },
+          "400": {
+            "description": "Bad request: Invalid data provided"
+          }
+        }
+      }
     }
+,    
+    "/AgriSoko/order/delete/{id}": {
+      "delete": {
+        "summary": "Delete order",
+        "description": "Delete an existing order by its ID",
+        "tags": ["Order"],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "type": "string",
+            "required": true,
+            "description": "ID of the order to be deleted"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Order deleted successfully"
+          },
+          "404": {
+            "description": "Order not found"
+          }
+        }
+      }
+    }
+  
   },
   "definitions": {
     "account": {
@@ -507,6 +662,7 @@
       },
       "required": ["fullName","email","address1","address2","phoneNumber","role"]
     },
+    
     "stock": {
       "type": "object",
       "properties": {
@@ -536,7 +692,43 @@
         }
       },
       "required": ["NameOfProduct", "Description", "pricePerTon", "quantity", "user"]
+    },
+    "OrderCreate": {
+      "type": "object",
+      "properties": {
+        "selectedStockItems": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SelectedStockItem"
+          },
+          "description": "Array of selected stock items"
+        },
+        "phoneNumber": {
+          "type": "string",
+          "description": "Phone number of the customer"
+        },
+        "shippingAddress": {
+          "type": "string",
+          "description": "Shipping address of the order"
+        }
+      },
+      "required": ["selectedStockItems","phoneNumber", "shippingAddress"]
+    },
+    "SelectedStockItem": {
+      "type": "object",
+      "properties": {
+        "NameOfProduct": {
+          "type": "string",
+          "description": "Name of the product"
+        },
+        "quantity": {
+          "type": "number",
+          "description": "The quantity you will receive"
+        }
+      },
+      "required": ["NameOfProduct", "quantity"]
     }
+    
   },
   "securityDefinitions": {
     "BearerAuth": {
@@ -544,5 +736,5 @@
       "name": "Authorization",
       "in": "header"
     }
-  }
-}
+  }}
+  

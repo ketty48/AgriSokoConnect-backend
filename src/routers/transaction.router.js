@@ -4,8 +4,8 @@ import {createTransaction,getAllTransactions,getAllFarmersWithStock} from '../co
 import {requireAuth} from '../middlewares/authorization.js'
 import {authorizeRoles} from '../middlewares/role.js';
 router.use(requireAuth)
-router.post('/add',createTransaction);
-router.get('/all',getAllTransactions)
+router.post('/add',authorizeRoles(['goverment']),createTransaction);
+router.get('/all',authorizeRoles(['goverment']),getAllTransactions)
 router.get('/allFarmers',authorizeRoles(['goverment']),getAllFarmersWithStock)
 
 export default router

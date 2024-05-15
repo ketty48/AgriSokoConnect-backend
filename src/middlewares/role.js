@@ -8,15 +8,14 @@ const authorizeRoles = (roles) => {
         try {
             const token = req.headers.authorization.split(' ')[1];
             const decoded = jwt.verify(token, configuration.JWT_SECRET);
-            // console.log('Decoded User:', decoded);
 
-            const user = await User.findById(decoded.id);
-            // console.log('User from Database:', user);
+            const user = await User.findById(decoded.id).populate('role'); // Populate role directly if stored as reference
+            if (!user) {
+                return res.status(401).json({ message: 'User not found.' });
+            }
 
-            const userRole = await Role.findById(user.role); // Assuming Role is your model for roles
-            // console.log('User Role:', userRole);
-
-            if (!userRole || userRole.role !== 'goverment') {
+            const userRole = await Role.findById(user.role);
+            if (!userRole || !roles.includes(userRole.role)) {
                 return res.status(403).json({ message: 'Access denied.' });
             }
 

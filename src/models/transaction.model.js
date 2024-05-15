@@ -1,15 +1,38 @@
-import mongoose from 'mongoose'
-const transactionSchema = new mongoose.Schema({
-    stock: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Stock'
+// Import required modules and define schema
+import mongoose from 'mongoose';
+
+const { Schema } = mongoose;
+
+const stockTransactionSchema = new Schema({
+    farmer: {
+        type: Schema.Types.ObjectId,
+        ref: 'User', // Reference to the User model
+        required: true
     },
-    quantity: Number,
-    date:Date,
-    
-
-
+    item: {
+        type: String,
+        required: true
+    },
+    quantity: {
+        type: Number,
+        required: true
+    },
+    price: {
+        type: Number,
+        required: true
+    },
+    type: {
+        type: String,
+        enum: ['sale', 'purchase'],
+        required: true
+    },
+    date: {
+        type: Date,
+        default: Date.now
+    }
 });
 
-const Transaction = mongoose.model('Transaction', transactionSchema);
-export default Transaction
+
+const StockTransaction = mongoose.model('StockTransaction', stockTransactionSchema);
+
+export default StockTransaction;

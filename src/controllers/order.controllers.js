@@ -1,151 +1,240 @@
 import orderModel from "../models/order.model.js";
+import userModel from "../models/users.model.js";
 import asyncWrapper from "../middlewares/async.js";
 import { NotFoundError, BadRequestError } from "../errors/index.js";
 import { validationResult } from "express-validator";
 import { sendEmail } from "../utils/sendEmail.js";
-import userModel from "../models/users.model.js";
-import stockModel from "../models/stock.model.js";
+import stockModel from "../models/stock.model.js"; 
+
+// Function to fetch product details based on product name
+async function getProductDetails(productName) {
+  try {
+    const stockItem = await stockModel.findOne({ NameOfProduct: productName });
+
+    if (!stockItem) {
+      return null;
+    }
+
+    return {
+      Description: stockItem.Description,
+      pricePerTon: stockItem.pricePerTon,
+    };
+  } catch (error) {
+    console.error('Error fetching product details:', error);
+    throw error;
+  }
+}
+
 export const addOrder = asyncWrapper(async (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    throw new BadRequestError(errors.array()[0].msg);
-  }
-
-  const { stock, quantity, quality, phoneNumber, Address } = req.body;
-  const userId = req.user.id;
-
-  // Retrieve the stock details to calculate the total price
-  const selectedStock = await stockModel.findById(stock);
-  if (!selectedStock) {
-    throw new NotFoundError("Selected stock not found");
-  }
-
-  // Calculate the total price based on the quantity ordered and the stock price
-  const totalPrice = selectedStock.price * quantity;
-
-  const newOrder = new orderModel({
-    user: userId,
-    stock,
-    quantity,
-    quality,
-    phoneNumber,
-    Address,
-    totalPrice, // Add totalPrice to the order
-  });
-
-  await newOrder.save();
-
-  const user = await userModel.findById(userId);
-  if (!user || !user.email) {
-    throw new NotFoundError("User not found or missing email");
-  }
-
-  const recipientEmail = user.email;
-  const subject = "Order Received Notification";
-  const body = `Dear ${user.userName},\n\nA new order (${selectedStock.NameOfProduct}) has been received successfully. Quantity: ${quantity}, Quality: ${quality}, Contact Number: ${phoneNumber}, Delivery Address: ${Address}. Total Price: ${totalPrice}.\n\n`;
-
   try {
-    await sendEmail(recipientEmail, subject, body);
-    console.log('Notification email sent successfully');
-  } catch (error) {
-    console.error('Error sending notification email:', error);
-  }
-
-  res.status(201).json({
-    status: "Order added successfully",
-    data: {
-      newOrder,
-    },
-  });
-});
-
-export const getAllStock = asyncWrapper(async (req, res, next) => {
-  try {
-    let params = stockModel.find();
-    if (req.query.sortBy) {
-      const sortBy = req.query.sortBy;
-      params = params.sort({ [sortBy]: 1 });
-    }
-    if (req.query.category) {
-      const category = req.query.category;
-      params = params.sort({ [category]: 1 });
+    const requiredFields = ['selectedStockItems', 'phoneNumber', 'shippingAddress'];
+    const missingFields = requiredFields.filter(field => !req.body[field]);
+    if (missingFields.length > 0) {
+      throw new BadRequestError(`Missing required fields: ${missingFields.join(', ')}`);
     }
 
-    const stocks = await params;
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      const errorMessages = errors.array().map(error => error.msg);
+      throw new BadRequestError(errorMessages.join(', '));
+    }
 
-    res.status(200).json({
-      status: "All stock available",
-      stocks: stocks,
+    const { selectedStockItems, phoneNumber, shippingAddress } = req.body;
+    const customer = req.user._id;
+
+    const user = await userModel.findById(customer);
+    if (!user) {
+      throw new NotFoundError('User not found');
+    }
+
+    let totalAmount = 0;
+
+    const updatedStockItems = await Promise.all(selectedStockItems.map(async (item) => {
+      const productDetails = await getProductDetails(item.NameOfProduct);
+      if (!productDetails) {
+        throw new NotFoundError(`Product details not found for product: ${item.NameOfProduct}`);
+      }
+      const itemTotalPrice = item.quantity * productDetails.pricePerTon;
+      totalAmount += itemTotalPrice;
+
+      return {
+        ...item,
+        Description: productDetails.Description,
+        pricePerTon: productDetails.pricePerTon,
+        itemTotalPrice
+      };
+    }));
+
+    const newOrder = new orderModel({
+      customer,
+      selectedStockItems: updatedStockItems,
+      phoneNumber,
+      shippingAddress,
+      totalAmount,
+      totalItems: selectedStockItems.reduce((total, item) => total + item.quantity, 0),
     });
-  } catch (error) {
-    return next(error);
-  }
-});
 
-export const getStockByID = asyncWrapper(async (req, res, next) => {
-  const stockId = req.params.id;
-  const userId = req.user.id;
-  try {
-    const stock = await stockModel.findOne({ _id: stockId, user: userId }).populate('user', 'name');
-    if (!stock) {
-      return next(new NotFoundError("Stock not found"));
-    }
-    res.status(200).json({
-      status: "Stock found",
-      stock: stock
-    });
-  } catch (error) {
-    return next(error);
-  }
-});
+    await newOrder.save();
 
-export const updateStock = asyncWrapper(async (req, res, next) => {
-  const stockId = req.params.id;
-  const userId = req.user.id;
-  try {
-    const stock = await stockModel.findOne({ _id: stockId, user: userId });
-    if (!stock) {
-      return next(new NotFoundError("Stock not found"));
-    }
-    const updatedStock = await stockModel.findByIdAndUpdate(stockId, req.body, { new: true });
-
-  
-    const user = await userModel.findById(userId);
-    if (!user || !user.email) {
-      throw new NotFoundError("User not found or missing email");
-    }
     const recipientEmail = user.email;
-    const subject = "Stock Updated Notification";
-    const body = `Dear ${user.userName},\n\nThe stock item (${updatedStock.NameOfProduct}) has been updated successfully. New Quantity: ${updatedStock.quantity}, New Price: ${updatedStock.totalPrice}.\n\n`;
-    try {
-      await sendEmail(recipientEmail, subject, body);
-      console.log('Notification email sent successfully');
-    } catch (error) {
-      console.error('Error sending notification email:', error);
-    }
+    const subject = 'Your order has been received';
+    const body = `Dear ${user.email},
 
-    res.status(200).json({
-      status: "Stock updated",
-      stock: updatedStock
-    });
+Your order has been received successfully.
+
+Here are the details of your order:
+
+${updatedStockItems.map((item, index) => `
+Item ${index + 1}:
+Name: ${item.NameOfProduct}
+Description: ${item.Description}
+Quantity: ${item.quantity}
+Unit Price: ${item.pricePerTon}
+Total Price: ${item.itemTotalPrice}
+`).join('\n')}
+
+Total Amount: ${totalAmount}
+Total Items: ${newOrder.totalItems}
+Shipping Address:
+${shippingAddress}
+
+Total Amount to be Paid: ${totalAmount}
+
+Thank you for your order!
+
+Sincerely,
+Agriconnect`;
+
+    await sendEmail(recipientEmail, subject, body);
+
+    res.status(201).json({ success: true, data: newOrder });
   } catch (error) {
-    return next(error);
+    next(error);
   }
 });
 
-export const deleteStock = asyncWrapper(async (req, res, next) => {
-  const stockId = req.params.id;
-  const userId = req.user.id;
+export const getAllOrders = asyncWrapper(async (req, res, next) => {
   try {
-    const stock = await stockModel.findOne({ _id: stockId, user: userId });
-    if (!stock) {
-      return next(new NotFoundError("Stock not found"));
-    }
-    await stockModel.findByIdAndDelete(stockId);
-    res.status(200).json({
-      status: "Stock deleted"
-    });
+    const orders = await orderModel.find();
+    res.status(200).json({ success: true, data: orders });
   } catch (error) {
-    return next(error);
+    next(error);
+  }
+});
+
+export const getOrder = asyncWrapper(async (req, res, next) => {
+  try {
+    const orderId = req.params.id;
+
+    const order = await orderModel.findById(orderId);
+    if (!order) {
+      throw new NotFoundError("Order not found");
+    }
+
+    res.status(200).json({ success: true, data: order });
+  } catch (error) {
+    next(error);
+  }
+});
+export const updateOrder = asyncWrapper(async (req, res, next) => {
+  try {
+    const orderId = req.params.id;
+
+    const order = await orderModel.findById(orderId);
+    if (!order) {
+      throw new NotFoundError("Order not found");
+    }
+    
+    // Fetch the user based on order.customer
+    const user = await userModel.findById(order.customer);
+
+    const { selectedStockItems, shippingAddress } = req.body;
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      const errorMessages = errors.array().map(error => error.msg);
+      throw new BadRequestError(errorMessages.join(', '));
+    }
+
+    const validStockItems = await Promise.all(
+      selectedStockItems.map(async (stockItem) => {
+        const stock = await stockModel.findOne({ NameOfProduct: stockItem.NameOfProduct });
+        if (!stock) {
+          console.warn(`Stock item with NameOfProduct "${stockItem.NameOfProduct}" not found`);
+          return null;
+        }
+        return stock;
+      })
+    );
+
+    const allStockItemsFound = validStockItems.every((stock) => stock !== null);
+    if (!allStockItemsFound) {
+      throw new BadRequestError("One or more stock items not found");
+    }
+
+    let totalAmount = 0;
+    const updatedStockItems = validStockItems.map((stock, index) => {
+      const selectedItem = selectedStockItems[index];
+      const itemTotalPrice = selectedItem.quantity * stock.pricePerTon;
+
+      totalAmount += itemTotalPrice;
+
+      return {
+        NameOfProduct: selectedItem.NameOfProduct,
+        quantity: selectedItem.quantity,
+        itemTotalPrice,
+      };
+    });
+
+    order.selectedStockItems = updatedStockItems;
+    order.shippingAddress = shippingAddress;
+    order.totalAmount = totalAmount;
+
+    await order.save();
+
+    const recipientEmail = user.email; // Corrected the recipient email address
+    const subject = 'Your order has been updated';
+    const body = `Dear ${user.email},
+
+
+Here are the updated details of your order:
+
+${updatedStockItems.map((item, index) => `
+Item ${index + 1}:
+Name: ${item.NameOfProduct}
+Quantity: ${item.quantity}
+Total Price: ${item.itemTotalPrice}
+`).join('\n')}
+
+Total Amount: ${totalAmount}
+Shipping Address:
+${shippingAddress}
+
+Thank you for your order!
+
+Sincerely,
+Agriconnect`;
+
+    await sendEmail(recipientEmail, subject, body);
+    res.status(200).json({ success: true, data: order });
+  } catch (error) {
+    next(error);
+  }
+});
+
+export const deleteOrder = asyncWrapper(async (req, res, next) => {
+  try {
+    const orderId = req.params.id;
+
+    const order = await orderModel.findByIdAndDelete(orderId);
+    if (!order) {
+      throw new NotFoundError("Order not found");
+    }
+
+    res
+      .status(200)
+      .json({ success: true, message: "Order deleted successfully" });
+  } catch (error) {
+    next(error);
   }
 });

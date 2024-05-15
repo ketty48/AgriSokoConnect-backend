@@ -26,8 +26,8 @@ export const addStock = asyncWrapper(async (req, res, next) => {
 
   const user = await userModel.findById(userId);
   const recipientEmail = user.email;
-  const subject = "Stock Added Notification";
-  const body = `Dear ${user.userName},\n\nA new stock item (${newStock.NameOfProduct}) has been added successfully. Quantity: ${newStock.quantity}, Price per Ton: ${newStock.pricePerTon}, Total Price: ${newStock.totalPrice}.\n\n`;
+  const subject = "Stock Added ";
+  const body = `Dear ${user.email},\n\nA new stock item (${newStock.NameOfProduct}) has been added successfully. Quantity: ${newStock.quantity}, Price per Ton: ${newStock.pricePerTon}, Total Price: ${newStock.totalPrice}.\n\n`;
 
   try {
     await sendEmail(recipientEmail, subject, body);
@@ -115,7 +115,7 @@ export const updateStock = asyncWrapper(async (req, res, next) => {
 
   const recipientEmail = user.email;
   const subject = "Stock Updated Notification";
-  const body = `Dear ${user.userName},\n\nThe stock item (${NameOfProduct}) has been updated successfully. New Quantity: ${quantity}, New Price: ${totalPrice}.\n\n`;
+  const body = `Dear ${user.email},\n\nThe stock item (${NameOfProduct}) has been updated successfully. New Quantity: ${quantity}, New Price: ${totalPrice}.\n\n`;
 
   try {
     await sendEmail(recipientEmail, subject, body);

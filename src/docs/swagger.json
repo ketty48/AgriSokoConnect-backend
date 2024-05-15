@@ -245,8 +245,8 @@
         }
       }
     },
- 
-    "/AgriSoko/stock/add": {
+
+    "/AgriSoko/stock/add":{
       "post":{
         "summary": "create stock",
         "description": "create stock",
@@ -274,7 +274,7 @@
         }
       }
     },
-    "/AgriSoko/stock/retrieve":{
+    "/AgriSoko/stock/retrieve": {
     "get": {
       "summary": "Get all stocks",
       "description": "Retrieve all stocks",
@@ -300,7 +300,7 @@
         }
       }
     }},
-    "/AgriSoko/stock/retrieve/{id}":{
+    "/AgriSoko/stock/retrieve/{id}": {
       "get": {
         "summary": "Get stock by ID",
         "description": "Retrieve details of a specific stock by its ID",
@@ -333,7 +333,7 @@
       }
     }
 ,
-    "/AgriSoko/stock/update/{id}":{
+    "/AgriSoko/stock/update/{id}": {
       "put": {
         "summary": "Update stock",
         "description": "Update existing stock details",
@@ -374,7 +374,7 @@
         }
       }
     },
-    "/AgriSoko/stock/delete/{id}":{
+    "/AgriSoko/stock/delete/{id}": {
       "delete": {
         "summary": "Delete stock",
         "description": "Delete an existing stock by its ID",
@@ -537,7 +537,6 @@
       },
       "required": ["NameOfProduct", "Description", "pricePerTon", "quantity", "user"]
     }
-
   },
   "securityDefinitions": {
     "BearerAuth": {

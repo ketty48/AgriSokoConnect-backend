@@ -35,35 +35,27 @@ export const getAllFarmersWithStock = async (req, res) => {
     }
 };
 
-// Get all buyers with their orders
 export const getAllBuyersWithOrders = async (req, res) => {
-    try 
-    {const users = await User.find().populate('role').exec();
-    // console.log('Fetched users:', users);
+    try {
 
-    // Filter users to get only farmers
-    const farmers = users.filter(user => user.role && user.role.role === 'buyer');
- 
-    const profiles = await Profile.find({ user: { $in: buyers.map(buyer => buyer._id) } }).exec();
-
-
-    // Retrieve stock items for each farmer by user ID
-    const buyersWithOrder = await Promise.all(profiles.map(async (profile) => {
+        const users = await User.find().populate('role').exec();
+        const buyers = users.filter(user => user.role && user.role.role === 'buyer');
+     
+        const profiles = await Profile.find({ user: { $in: buyers.map(buyer => buyer._id) } }).exec();
        
 
-        // Fetch stock items based on user ID
-        const orderItems = await Order.find({ user: profile.user }).exec();
+        const buyersWithOrder = await Promise.all(profiles.map(async (profile) => {
+            const orderItems = await Order.find({ customer: profile.user }).exec();
+          
+
+            return { buyer: profile.fullName, orders: orderItems };
+        }));
        
-
-        return { buyer: profile.fullName, order: orderItems};
-    }));
-
-
-    res.json({ buyersWithOrder });
-} catch (error) {
-    console.error('Error fetching farmers with stock:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-}
+        res.json({ buyersWithOrder });
+    } catch (error) {
+        console.error('Error fetching buyers with orders:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
 }
 
 

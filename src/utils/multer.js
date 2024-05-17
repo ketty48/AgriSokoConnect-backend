@@ -1,8 +1,3 @@
-import express from 'express';
-const stockRouter = express.Router();
-import { addStock,getStock,getStockByID,updateStock,deleteStock } from '../controllers/stock.controllers.js';
-import { addStockValidations } from '../utils/validation.js';   
-import {requireAuth} from '../middlewares/authorization.js'
 import multer from "multer";
 import path from "path";
 
@@ -27,15 +22,4 @@ const upload = multer({ storage: storage});
 
 // const uploadImage = upload.single('image'); // Ensure the field name is 'image'
 
-
-
-
-stockRouter.use(requireAuth)
-stockRouter.post('/add',upload.single("image"),addStock);
-stockRouter.get('/retrieve', getStock);
-stockRouter.put('/update/:id', addStockValidations,updateStock);
-stockRouter.delete('/delete/:id', deleteStock);
-stockRouter.get('/retrieve/:id',getStockByID)
-
-
-export default stockRouter;
+export default upload;

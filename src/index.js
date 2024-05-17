@@ -9,6 +9,7 @@ import swaggerUi from "swagger-ui-express";
 //const swaggerDocument = require("./docs/swagger.json");
 //import swaggerUi from "swagger-ui-express/dist/swagger-ui-express";
 import swaggerDocument from "./docs/swagger.json" assert { type: "json" };
+import bodyParser from "body-parser";
 //import swaggerDocumentation from "./docs/swagger.json";
 
 
@@ -22,6 +23,8 @@ const corsOptions = {
 const app = express();
 app.use(cors(corsOptions));
 app.use(express.json());
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended:false }));
 app.use('/AgriSoko', Routers);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use('/', (req, res) => {

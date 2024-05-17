@@ -35,7 +35,7 @@ export const addOrder = asyncWrapper(async (req, res, next) => {
       return {
         _id: product._id, // Use product ID instead of name
         NameOfProduct: product.NameOfProduct,
-        Description: product.Description,
+        Description: product.description,
         pricePerTon: product.pricePerTon,
         quantity: item.quantity,
         itemTotalPrice

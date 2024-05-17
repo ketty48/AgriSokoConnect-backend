@@ -156,26 +156,8 @@ export const SignIn = asyncWrapper(async (req, res, next) => {
     const token = jwt.sign({ id: foundUser.id, email: foundUser.email, role: role.role }, configuration.JWT_SECRET, { expiresIn: "1h" });
     sendTokenCookie(token, res);
 
-    let dashboardURL;
-    switch (role.role) {
-        case 'farmer':
-            dashboardURL = '/farmer/dashboard';
-            break;
-        case 'buyer':
-            dashboardURL = '/buyer/dashboard';
-            break;
-        case 'goverment':
-            dashboardURL = '/government/dashboard';
-            break;
-            case 'admin':
-                dashboardURL = '/admin/dashboard';
-                break;
-        default:
-            // If the role is not specified or invalid, return an error
-            return next(new BadRequestError("Invalid user role!"));
-    }
 
-    res.status(200).json({ message: 'User logged in!', token, dashboardURL });
+    res.status(200).json({ message: 'User logged in!', token});
 });
 
 
@@ -202,7 +184,7 @@ export const ForgotPassword = asyncWrapper(async (req, res, next) => {
         expirationDate: new Date().getTime() + (60 * 1000 * 5),
     });
 
-    const link = `http://localhost:8060/reset-password?token=${token}&id=${foundUser.id}`;
+    const link = `http://localhost:8060/https://agrisoko-connect-platform.netlify.app/reset?token=${token}&id=${foundUser.id}`;
     const emailBody = `Click on the link bellow to reset your password\n\n${link}`;
 
     await sendEmail(req.body.email, "Reset your password", emailBody);

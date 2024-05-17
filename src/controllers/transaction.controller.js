@@ -8,16 +8,32 @@ import TransactionAndTax from '../models/transaction.model.js';
 import { calculateTransactionAmount, calculateTaxAmount } from '../utils/transaction.js';
 
 const calculateTransactionAndTax = async function(next) {
+    console.log('Pre-save middleware triggered');
+    
     if (this.isModified('quantity')) {
-  
+        console.log('Stock quantity modified:', this.quantity);
+
         const transactionAmount = calculateTransactionAmount(this.quantity, this.pricePerTon);
+        console.log('Calculated Transaction Amount:', transactionAmount);
+
         const taxAmount = calculateTaxAmount(transactionAmount);
-        const transaction = await TransactionAndTax.create({ user: this.user, type: 'Transaction', amount: transactionAmount });
-        const tax = await TransactionAndTax.create({ user: this.user, type: 'Tax', amount: taxAmount });
-        next();
+        console.log('Calculated Tax Amount:', taxAmount);
+
+        try {
+            await TransactionAndTax.create({ user: this.user, type: 'Transaction', amount: transactionAmount });
+            console.log('Transaction record created');
+
+            await TransactionAndTax.create({ user: this.user, type: 'Tax', amount: taxAmount });
+            console.log('Tax record created');
+        } catch (error) {
+            console.error('Error creating transaction or tax record:', error);
+            next(error);
+        }
     } else {
-        next();
+        console.log('Quantity not modified, middleware skipped');
     }
+
+    next();
 };
 
 // Attach middleware to the schema

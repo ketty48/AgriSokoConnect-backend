@@ -76,3 +76,66 @@ export const removeUserProfile = async (req, res) => {
     }
 };
 
+export const countFarmer = async (req, res) => {
+    try {
+      const users = await User.find().populate('role');
+
+      let farmersCount = 0;
+      users.forEach(user => {
+        if (user.role && user.role.role === 'farmer') {
+          farmersCount++;
+        }
+      })
+  
+      res.status(200).json({
+        farmers: farmersCount,
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  };
+  export const countBuyer = async (req, res) => {
+    try {
+      const users = await User.find().populate('role');
+
+      let buyersCount = 0;
+      users.forEach(user => {
+        if (user.role && user.role.role === 'buyer') {
+          buyersCount++;
+        }
+      })
+  
+      res.status(200).json({
+        buyers: buyersCount,
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  };
+  export const countStock = async (req, res) => {
+    try {
+      const stocksCount = await Stock.countDocuments();
+  
+      res.status(200).json({ stocks: stocksCount});
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  };
+  export const countOrder = async (req, res) => {
+    try {
+      const ordersCount = await Order.countDocuments();
+  
+      res.status(200).json({ orders: ordersCount});
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  };
+  export const countAccounts = async (req, res) => {
+    try {
+      const usersCount = await User.countDocuments();
+  
+      res.status(200).json({ users: usersCount});
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  };

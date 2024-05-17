@@ -1,4 +1,5 @@
 import { Schema, model,mongoose } from 'mongoose';
+import Profile from './editProfile.model.js'
 
 const UserSchema = new Schema({
     email: {
@@ -42,6 +43,14 @@ const UserSchema = new Schema({
         }
     },
     timestamps: true,
+});
+UserSchema.pre('remove', async function (next) {
+    try {
+        await Profile.findOneAndDelete({ user: this._id});
+        next();
+    } catch (err) {
+        next(err);
+    }
 });
 
 const userModel = model('User', UserSchema);

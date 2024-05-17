@@ -556,6 +556,167 @@
           }
         }
       }
+    },
+    "/AgriSoko/admin/farmers": {
+      "get": {
+        "summary": "All Farmers with their stock",
+        "description": "All Farmers with their stock",
+        "tags": ["Admin"],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/admin"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/AgriSoko/admin/buyers": {
+      "get": {
+        "summary": "All Buyers with their orders",
+        "description": "All Buyers with their orders",
+        "tags": ["Admin"],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/admin"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/AgriSoko/admin/totalFarmer": {
+      "get": {
+        "summary": "Total farmers",
+        "description": "Total farmers",
+        "tags": ["Admin"],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/admin"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/AgriSoko/admin/totalBuyer": {
+      "get": {
+        "summary": "Total buyers",
+        "description": "Total buyers",
+        "tags": ["Admin"],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/admin"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/AgriSoko/admin/totalStock": {
+      "get": {
+        "summary": "Total stocks",
+        "description": "Total stocks",
+        "tags": ["Admin"],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/admin"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/AgriSoko/admin/totalOrder": {
+      "get": {
+        "summary": "Total orders",
+        "description": "Total orders",
+        "tags": ["Admin"],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/admin"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/AgriSoko/admin/totalUsers": {
+      "get": {
+        "summary": "Total accounts",
+        "description": "Total accounts",
+        "tags": ["Admin"],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/admin"
+              }
+            }
+          }
+        }
+      }
     }
   
   },

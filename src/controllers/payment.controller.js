@@ -1,79 +1,70 @@
-import fetch from 'node-fetch';
 import dotenv from 'dotenv';
-import express from 'express';
+import { v4 as uuidv4 } from 'uuid';
 import Flutterwave from 'flutterwave-node-v3';
-import open from 'open';
+import User from '../models/users.model.js';
+import Profile from '../models/editProfile.model.js';
 
 dotenv.config();
 
-const app = express();
+const flw = new Flutterwave(process.env.PUBLIC_KEY, process.env.SECRETE_KEY);
 
-const PUBLIC_KEY = process.env.PUBLIC_KEY;
-const SECRET_KEY = process.env.SECRETE_KEY;
-
-console.log(`PUBLIC_KEY: ${PUBLIC_KEY}`); // Add logging
-console.log(`SECRET_KEY: ${SECRET_KEY}`); // Add logging
-
-if (!PUBLIC_KEY || !SECRET_KEY) {
-  throw new Error('PUBLIC_KEY and SECRET_KEY must be set in the .env file');
-}
-
-const flw = new Flutterwave(PUBLIC_KEY, SECRET_KEY);
-
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-
-app.post('/momo', async (req, res) => {
+export const initiatePayment = async (req, res) => {
   try {
-    const { email, phone_number, name } = req.body;
-
-    // Validate the required fields
-    if (!email || !phone_number || !name) {
-      return res.status(400).json({ error: 'Email, phone number, and name are required' });
+    const { email } = req.user;
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
     }
 
-    console.log('Request body:', req.body); // Log the request body to ensure fields are present
+    const profile = await Profile.findOne({ user: user._id });
+    if (!profile) {
+      return res.status(404).json({ message: 'Profile not found' });
+    }
 
-    const tx_ref = `RX1-${Date.now()}`; // Generate a unique transaction reference
+    const { PhoneNumber } = profile;
+
+    const paymentOptions = req.body.payment_method === 'momo' ? 'mobilemoneyrwanda' : 'card';
 
     const payload = {
-      tx_ref: tx_ref,
+      tx_ref: 'RX1-' + uuidv4(),
+      order_id: uuidv4(),
       amount: 10,
-      currency: "RWF",
-      payment_type: "mobilemoneyrwanda", // Correct payment type
-      redirect_url: "https://agrisoko-connect-platform.netlify.app",
+      currency: 'RWF',
+      redirect_url: 'https://agrisoko-connect-platform.netlify.app',
       customer: {
-        email: email, // dynamically receive from request body
-        phone_number: phone_number, // dynamically receive from request body
-        name: name // dynamically receive from request body
+        email,
+        phonenumber: PhoneNumber.toString(),
       },
       customizations: {
-        title: "Beyond Beautiful",
-        description: "Payment for your booking",
-        logo: "img/favicon-32x32.png"
-      }
+        title: 'Payment for AgriSokoConnect',
+        description: 'Payment for goods',
+        logo: 'https://example.com/logo.png',
+      },
     };
 
-    console.log('Payload:', payload); // Log the payload to ensure it's correct
+    console.log('Request Payload:', payload);
 
-    // Ensure you use the correct method from the SDK
-    const response = await flw.MobileMoney.rwanda(payload);
+    let response;
+    if (req.body.payment_method === 'momo') {
+      response = await flw.MobileMoney.rwanda(payload);
+    } else {
+      // Include the encryption key in the payload for card payments
+      payload.enckey = process.env.ENCRYPTION_KEY;
 
-    console.log('Response:', response); // Log the response from the Flutterwave API
+      response = await flw.Charge.card(payload);
+    }
 
     if (response.status === 'success') {
-      res.json({ link: response.data.link });
-      // Optionally open the link automatically
-      open(response.data.link);
+      if (response.meta && response.meta.authorization && response.meta.authorization.redirect) {
+        res.redirect(response.meta.authorization.redirect);
+      } else {
+        res.status(200).json(response);
+      }
     } else {
-      res.status(400).json({ error: response.message });
+      res.status(500).json({ error: 'Payment initiation failed' });
     }
   } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    console.error('Payment initiation error:', error);
+    res.status(500).json({ error: error.message });
   }
-});
-
-
-
-export default app;
+};

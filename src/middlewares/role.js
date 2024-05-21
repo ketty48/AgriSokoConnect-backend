@@ -15,6 +15,7 @@ export const attachUserRole = (req, res, next) => {
         const userRole = decoded.role;
 
         req.userRole = userRole;
+        console.log(req.userRole);
         next();
     } catch (error) {
         console.error(error);

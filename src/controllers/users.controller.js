@@ -163,7 +163,7 @@ export const SignIn = asyncWrapper(async (req, res, next) => {
     sendTokenCookie(token, res);
 
     // Respond with success message and token
-    res.status(200).json({ message: 'User logged in!', token });
+    res.status(200).json({ message: 'User logged in!', token, role: role.role })
 });
 
 

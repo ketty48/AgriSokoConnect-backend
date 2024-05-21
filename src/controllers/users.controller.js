@@ -153,11 +153,17 @@ export const SignIn = asyncWrapper(async (req, res, next) => {
         return next(new BadRequestError("Invalid user role!"));
     }
     
+    // Log the role to ensure it's fetched correctly
+    console.log("Role:", role);
+
+    // Generate JWT token with user data and role
     const token = jwt.sign({ id: foundUser.id, email: foundUser.email, role: role.role }, configuration.JWT_SECRET, { expiresIn: "1h" });
+    
+    // Send the token as a cookie
     sendTokenCookie(token, res);
 
-
-    res.status(200).json({ message: 'User logged in!', token});
+    // Respond with success message and token
+    res.status(200).json({ message: 'User logged in!', token, role: role.role })
 });
 
 

@@ -39,7 +39,6 @@ const calculateTransactionAndTax = async function(next) {
 // Attach middleware to the schema
 Stock.schema.pre('save', calculateTransactionAndTax);
 
-
 export const getAllFarmersWithStock = asyncWrapper(async (req, res) => {
     try {
    

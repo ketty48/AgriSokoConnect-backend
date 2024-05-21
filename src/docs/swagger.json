@@ -709,10 +709,47 @@
           "200": {
             "description": "Successful operation",
             "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/admin"
-              }
+              "type": "array"
+            }
+          }
+        }
+      }
+    },
+    "/AgriSoko/transaction/allFarmers": {
+      "get": {
+        "summary": "All farmers with their stock",
+        "description": "Total farmers",
+        "tags": ["Government"],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "type": "array"
+            }
+          }
+        }
+      }
+    },
+    "/AgriSoko/pay/momo": {
+      "post": {
+        "summary": "Pay your order",
+        "description": "pay your order",
+        "tags": ["Payment"],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful payed",
+            "schema": {
+              "type": "array"
             }
           }
         }

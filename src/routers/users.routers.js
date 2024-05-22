@@ -2,7 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv'
 dotenv.config()
 const userRouter = express.Router();
-import { SignUp, SignIn, ValidateOpt, ForgotPassword, ResetPassword} from '../controllers/users.controller.js';
+import { SignUp, SignIn, ValidateOpt, ForgotPassword, ResetPassword,getAllFarmersStock} from '../controllers/users.controller.js';
 import { signUpValidations, signInValidations, otpValidation, forgotPasswordValidation, resetPasswordValidation } from '../utils/validation.js';
 import configuration from '../configs/index.js'
 import { getRoles,addRole} from '../controllers/role.contoller.js';
@@ -17,5 +17,6 @@ userRouter.post('/signin', signInValidations, SignIn);
 userRouter.post('/verify', otpValidation, ValidateOpt);
 userRouter.post('/forgotPassword', forgotPasswordValidation, ForgotPassword)
 userRouter.post('/resetPassword', resetPasswordValidation, ResetPassword);
+userRouter.get('/getAllFarmers',getAllFarmersStock)
 
 export default userRouter;

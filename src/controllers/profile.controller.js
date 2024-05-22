@@ -5,21 +5,26 @@ import profileModel from "../models/editProfile.model.js"
 
 
 export const updateUser = asyncWrapper(async (req, res, next) => {
-    const foundUser = await profileModel.findById(req.user.id);
-    if (!foundUser) {
-        return next(new BadRequestError("User not found!"));
-    }
-    
-    const updatedUser = await profileModel.findByIdAndUpdate(req.user.id, req.body, { new: true });
+  const foundUser = await profileModel.findById(req.user.id);
+  if (!foundUser) {
+    return next(new BadRequestError("User not found!"));
+  }
+  
+  // Update only the fields present in req.body
+  const updatedUser = await profileModel.findByIdAndUpdate(
+    req.user.id,
+    { $set: req.body },
+    { new: true }
+  );
 
-    if (!updatedUser) {
-        return next(new InternalServerError("Failed to update user!"));
-    }
+  if (!updatedUser) {
+    return next(new InternalServerError("Failed to update user!"));
+  }
 
-    return res.status(200).json({
-        message: "User updated!",
-        user: updatedUser
-    });
+  return res.status(200).json({
+    message: "User updated!",
+    user: updatedUser
+  });
 });
 
 export const getUserIfo = asyncWrapper(async (req, res, next) => {

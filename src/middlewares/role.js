@@ -1,17 +1,16 @@
 import jwt from "jsonwebtoken";
-
 import configuration from "../configs/index.js";
 
+// Middleware to extract user role from token in the Authorization header
 export const attachUserRole = (req, res, next) => {
     try {
-        const token = req.cookies.token; // Extract token from cookie named 'token'
-        if (!token) {
+        const authorizationHeader = req.headers.authorization;
+        if (!authorizationHeader || !authorizationHeader.startsWith("Bearer ")) {
             return res.status(401).json({ message: 'No token provided.' });
         }
 
+        const token = authorizationHeader.split(" ")[1];
         const decoded = jwt.verify(token, configuration.JWT_SECRET);
-
-        // Assuming the role is included in the token payload as 'role'
         const userRole = decoded.role;
 
         req.userRole = userRole;

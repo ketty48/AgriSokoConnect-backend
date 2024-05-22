@@ -754,8 +754,67 @@
           }
         }
       }
+    },
+    "/AgriSoko/transaction/allFarmers": {
+      "get": {
+        "summary": "All farmers with their stock",
+        "description": "All Farmers with their stock",
+        "tags": ["Government"],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful",
+            "schema": {
+              "type": "array"
+            }
+          }
+        }
+      }
+    },
+    "/AgriSoko/transaction/allTransaction": {
+      "get": {
+        "summary": "All transaction",
+        "description": "All transaction",
+        "tags": ["Government"],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful ",
+            "schema": {
+              "type": "array"
+            }
+          }
+        }
+      }
+    },
+    "/AgriSoko/transaction/allTaxes": {
+      "get": {
+        "summary": "All Taxes",
+        "description": "All Taxes",
+        "tags": ["Government"],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful",
+            "schema": {
+              "type": "array"
+            }
+          }
+        }
+      }
     }
-  
   },
   "definitions": {
     "account": {

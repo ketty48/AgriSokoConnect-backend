@@ -12,6 +12,7 @@ import configuration from '../configs/index.js'
 import sendTokenCookie from "../middlewares/cookie.js";
 import profileModel from "../models/editProfile.model.js"
 import RoleModel from "../models/role.model.js";
+import Stock from "../models/stock.model.js"
 
 
 
@@ -240,3 +241,32 @@ export const ResetPassword = asyncWrapper(async (req, res, next) => {
         })
     }
 });
+export const getAllFarmersStock = async (req, res) => {
+    try {
+        const users = await UserModel.find().populate('role').exec();
+        // console.log('Fetched users:', users);
+
+        // Filter users to get only farmers
+        const farmers = users.filter(user => user.role && user.role.role === 'farmer');
+     
+        const profiles = await profileModel.find({ user: { $in: farmers.map(farmer => farmer._id) } }).exec();
+   
+
+        // Retrieve stock items for each farmer by user ID
+        const farmersWithStock = await Promise.all(profiles.map(async (profile) => {
+           
+
+            // Fetch stock items based on user ID
+            const stockItems = await Stock.find({ user: profile.user }).exec();
+           
+
+            return { farmer: profile.fullName, stock: stockItems };
+        }));
+
+ 
+        res.json({ farmersWithStock });
+    } catch (error) {
+        console.error('Error fetching farmers with stock:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};

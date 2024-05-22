@@ -1,10 +1,10 @@
 import  express from 'express';
 const router = express.Router();
-import { getAllFarmersWithStock, getAllBuyersWithOrders, removeUserProfile,countBuyer,countFarmer,countStock,countOrder ,countAccounts } from  '../controllers/admin.controller.js';
+import { getAllFarmersWithStock, getAllBuyersWithOrders, removeUserProfile,countBuyer,countFarmer,countStock,countOrder ,countAccounts, } from  '../controllers/admin.controller.js';
 import {requireAuth} from '../middlewares/authorization.js'
 import { authorizeRoles, attachUserRole } from '../middlewares/role.js';
-router.use(requireAuth)
 
+router.use(requireAuth)
 
 router.get('/farmers',attachUserRole, authorizeRoles(['admin']), getAllFarmersWithStock);
 router.get('/buyers', attachUserRole, authorizeRoles(['admin']),getAllBuyersWithOrders);

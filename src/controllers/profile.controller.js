@@ -5,14 +5,15 @@ import profileModel from "../models/editProfile.model.js"
 
 
 export const updateUser = asyncWrapper(async (req, res, next) => {
-  const foundUser = await profileModel.findById(req.user.id);
-  if (!foundUser) {
+  const userId = req.user.id;
+  const user= await profileModel.findOne({  user: userId });
+  if (!user) {
     return next(new BadRequestError("User not found!"));
   }
   
   // Update only the fields present in req.body
   const updatedUser = await profileModel.findByIdAndUpdate(
-    req.user.id,
+    user,
     { $set: req.body },
     { new: true }
   );

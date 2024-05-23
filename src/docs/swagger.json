@@ -247,33 +247,63 @@
     },
 
     "/AgriSoko/stock/add":{
-      "post":{
-        "summary": "create stock",
-        "description": "create stock",
-        "tags": ["Stock"],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "in": "body",
-            "name": "body",
-            "schema": {
-              "$ref": "#/definitions/stock"
-            },
-            "required": true,
-            "description": "stock object"
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "stock created"
-          }
+    "post":{
+      "summary": "Create stock",
+      "description": "Create new stock entry",
+      "tags": ["Stock"],
+      "security": [{"BearerAuth": []}],
+      "consumes": ["multipart/form-data"],
+      "parameters": [
+        {
+          "in": "formData",
+          "name": "NameOfProduct",
+          "type": "string",
+          "required": true,
+          "description": "Name of the product"
+        },
+        {
+          "in": "formData",
+          "name": "description",
+          "type": "string",
+          "required": true,
+          "description": "Description of the product"
+        },
+        {
+          "in": "formData",
+          "name": "pricePerTon",
+          "type": "number",
+          "required": true,
+          "description": "Price per ton of the product"
+        },
+        {
+          "in": "formData",
+          "name": "quantity",
+          "type": "integer",
+          "required": true,
+          "description": "Quantity of the product"
+        },
+        {
+          "in": "formData",
+          "name": "typeOfProduct",
+          "type": "string",
+          "required": true,
+          "description": "Type of the product"
+        },
+        {
+          "in": "formData",
+          "name": "image",
+          "type": "file",
+          "required": true,
+          "description": "Image file associated with the stock"
+        }
+      ],
+      "responses": {
+        "201": {
+          "description": "Stock created successfully"
         }
       }
-    },
+    }},
+    
     "/AgriSoko/stock/retrieve": {
     "get": {
       "summary": "Get all stocks",
@@ -557,6 +587,75 @@
         }
       }
     },
+    "AgriSoko/contact/add":{
+   "post":{
+    "summary":"Send Message",
+     "description":"Message ",
+     "tags":["contact"],
+     "security":[
+      {"BearerAuth":[]}
+     ],"parameters": [
+      {
+        "in": "body",
+        "name": "body",
+        "description": "Order object",
+        "schema": {
+          "$ref": "#/definitions/contactCreate"
+        },
+        "required": true
+      }
+    ],"responses": {
+      "200": {
+        "description": "Order deleted successfully"
+      },
+      "404": {
+        "description": "Order not found"
+      }
+    }
+   }
+    },
+    
+"/AgriSoko/contact/get":{
+  "get":{
+    "summary": "Get all contacts",
+    "description": "Retrieve all contacts",
+    "tags": ["contact"],
+    "security":{"BearerAuth": []
+  },
+    "responses":{
+      "200": {
+        "description": "Successful operation"
+      },
+        "schema":{
+          "type": "array",
+          "items":{
+            "$ref": "#/definitions/contactCreate"
+          }}
+  }}},
+  "/AgriSoko/contact/contact/{email}":{
+    "get":{
+      "summary": "Get contact by email",
+      "description": "Retrieve details of a specific contact by its email",
+      "tags": ["contact"],
+      "security":{"BearerAuth": []},   
+      "parameters":{
+      "in": "path",
+          "name": "email",
+          "type": "string",
+          "required": true,
+          "description": "Email of the contact to retrieve"
+      },
+      "responses":{
+        "200":{
+          "description": "Contact found"
+        },
+          "schema":{
+            "$ref": "#/definitions/contactCreate"
+          }
+        
+  }}},
+  
+  
     "/AgriSoko/admin/farmers": {
       "get": {
         "summary": "All Farmers with their stock",
@@ -888,9 +987,28 @@
         }
       },
       "required": ["NameOfProduct", "quantity"]
-    }
-    
-  },
+    },
+ 
+  "contactCreate":{
+   "type" : "object",
+    "properties":{
+    "names":{
+        "type": "string"
+    },
+      "email":{
+        "type": "string"
+      },
+      "phoneNumber":{
+        "type":"string"
+      }, 
+      "subject":{
+        "type":"string"
+      },
+      "message":{
+        "type":"string"
+      }},
+    "required":["names","email","phoneNumber","subject","message"]
+    }},
   "securityDefinitions": {
     "BearerAuth": {
       "type": "apiKey",

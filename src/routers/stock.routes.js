@@ -4,6 +4,7 @@ import { addStock,getStock,getStockByID,updateStock,deleteStock } from '../contr
 import { addStockValidations } from '../utils/validation.js';   
 import {requireAuth} from '../middlewares/authorization.js'
 import { getAllOrders,getOrder } from '../controllers/farmerOrder.controller.js';
+import upload from '../utils/multer.js';
 stockRouter.use(requireAuth)
 stockRouter.post('/add',upload.single("image"),addStock);
 stockRouter.get('/retrieve', getStock);

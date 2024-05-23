@@ -4,7 +4,6 @@ import { NotFoundError, BadRequestError } from "../errors/index.js";
 import { validationResult } from "express-validator";
 import userModel from "../models/users.model.js";
 import { sendEmail } from "../utils/sendEmail.js";
-import uploadImage from "../utils/multer.js";
 
 export const addStock = [
   asyncWrapper(async (req, res, next) => {

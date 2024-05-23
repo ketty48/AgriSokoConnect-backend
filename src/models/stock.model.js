@@ -2,7 +2,7 @@
 
 import {Schema , model} from 'mongoose';
 import TransactionAndTax from './transaction.model.js'
-const orderSchema = new Schema({
+const stockSchema = new Schema({
  user:{
 
     type: Schema.Types.ObjectId,
@@ -66,6 +66,6 @@ const calculateTransactionAndTax = async function(next) {
   next();
 };
 
-orderSchema.pre('save', calculateTransactionAndTax);
+stockSchema.pre('save', calculateTransactionAndTax);
 const stockModel = model('stock', stockSchema);
 export default stockModel;

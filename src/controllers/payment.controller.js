@@ -48,14 +48,22 @@ export const initiatePayment = async (req, res) => {
 
         console.log('Request Payload:', payload);
 
+        const secretKey = process.env.SECRETE_KEY; // Ensure your .env file has SECRET_KEY
+
+        if (!secretKey) {
+            throw new Error('SECRET_KEY is not defined in the environment variables');
+        }
+
         const response = await got.post("https://api.flutterwave.com/v3/payments", {
             headers: {
-                Authorization: `Bearer ${process.env.SECRETE_KEY}`,
+                Authorization: `Bearer ${secretKey}`,
                 'Content-Type': 'application/json'
             },
             json: payload,
             responseType: 'json'
         });
+
+        console.log('Response:', response.body);
 
         if (response && response.body && response.body.status === 'success') {
             res.redirect(response.body.data.link); // Redirect the user to the payment link

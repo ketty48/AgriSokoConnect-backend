@@ -1,12 +1,10 @@
 import dotenv from 'dotenv';
 import { v4 as uuidv4 } from 'uuid';
-import Flutterwave from 'flutterwave-node-v3';
+import got from 'got';
 import User from '../models/users.model.js';
 import Profile from '../models/editProfile.model.js';
 
 dotenv.config();
-
-const flw = new Flutterwave(process.env.PUBLIC_KEY, process.env.SECRETE_KEY);
 
 export const initiatePayment = async (req, res) => {
     try {
@@ -22,61 +20,55 @@ export const initiatePayment = async (req, res) => {
         }
 
         const { PhoneNumber } = profile;
-        const paymentMethod = req.body.payment_method;
-
-        const customerName = `${user.firstName || 'FirstName'} ${user.lastName || 'LastName'}`;
+        const customerName = `${profile.fullName}`;
 
         const payload = {
             tx_ref: 'RX1-' + uuidv4(),
-            order_id: uuidv4(),
-            amount: 10,
-            currency: 'RWF',
-            country: 'RW',
-            payment_options: paymentMethod === 'momo' ? 'mobilemoneyrwanda' : 'card',
-            redirect_url: 'https://agrisoko-connect-platform.netlify.app',
+            amount: "100",
+            currency: "RWF",
+            redirect_url: "https://agrisoko-connect-platform.netlify.app",
+            meta: {
+                consumer_id: uuidv4(),
+                consumer_mac: "92a3-912ba-1192a"
+            },
             customer: {
                 email,
                 phone_number: PhoneNumber.toString(),
                 name: customerName,
             },
             customizations: {
-                title: 'Payment for your booking',
-                description: 'Payment for your booking on AgriSoko Connect',
-                logo: 'https://your-logo-url.com/logo.png',
+                title: "AgriSoKoConnect",
+                logo: "http://www.piedpiper.com/app/themes/joystick-v27/images/logo.png"
             },
+            configurations: {
+                session_duration: 1, // Session timeout in minutes (maxValue: 1440 minutes)    
+                max_retry_attempt: 5, // Max retry (int)
+            }
         };
 
         console.log('Request Payload:', payload);
 
-        let response;
-        if (paymentMethod === 'momo') {
-            response = await flw.MobileMoney.rwanda(payload);
-        } else {
-            // For card payment
-            const cardPayload = {
-                ...payload,
-                card_number: req.body.card_number,
-                cvv: req.body.cvv,
-                expiry_month: req.body.expiry_month,
-                expiry_year: req.body.expiry_year,
-                enckey: process.env.ENCRYPTION_KEY,
-            };
-            response = await flw.Charge.card(cardPayload);
-        }
+        const response = await got.post("https://api.flutterwave.com/v3/payments", {
+            headers: {
+                Authorization: `Bearer ${process.env.SECRETE_KEY}`,
+                'Content-Type': 'application/json'
+            },
+            json: payload,
+            responseType: 'json'
+        });
 
-        console.log('Payment Response:', response);
-
-        if (response && response.status === 'success') {
-            if (paymentMethod === 'momo') {
-                res.redirect(response.meta.authorization.redirect);
-            } else {
-                res.status(200).json(response);
-            }
+        if (response && response.body && response.body.status === 'success') {
+            res.redirect(response.body.data.link); // Redirect the user to the payment link
         } else {
-            res.status(500).json({ error: 'Payment initiation failed', details: response });
+            res.status(500).json({ error: 'Payment initiation failed' });
         }
-    } catch (error) {
-        console.error('Payment initiation error:', error);
-        res.status(500).json({ error: error.message });
+    } catch (err) {
+        console.error('Error:', err);
+        if (err.response) {
+            console.error('Error Response:', err.response.body);
+            res.status(err.response.statusCode).json({ error: err.response.body });
+        } else {
+            res.status(500).json({ error: 'Internal Server Error' });
+        }
     }
 };

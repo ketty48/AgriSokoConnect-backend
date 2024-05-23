@@ -9,6 +9,10 @@ const selectedStockItemSchema = new Schema({
     type: Number,
     required: true,
   },
+  typeOfProduct: {
+    type: String,
+    required: true,
+  },
   itemTotalPrice: {
     type: Number,
     required: true,

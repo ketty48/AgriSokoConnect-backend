@@ -53,7 +53,7 @@ export const initiatePayment = async (req, res) => {
         if (!secretKey) {
             throw new Error('SECRET_KEY is not defined in the environment variables');
         }
-
+        console.log('SECRET_KEY:', secretKey); 
         const response = await got.post("https://api.flutterwave.com/v3/payments", {
             headers: {
                 Authorization: `Bearer ${secretKey}`,

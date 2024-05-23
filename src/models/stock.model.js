@@ -1,54 +1,61 @@
+
+
 import {Schema , model} from 'mongoose';
 import TransactionAndTax from './transaction.model.js'
-const orderSchema = new Schema({
+const stockSchema = new Schema({
  user:{
+
     type: Schema.Types.ObjectId,
     ref: 'User',
     required: false
- }
- ,
- NameOfProduct:{
+  },
+  NameOfProduct: {
     type: String,
     required: false
- },
- Description:{
+  },
+  description: { 
     type: String,
     required: false
- },
- pricePerTon:{
-   type: Number,
-   required: false
- },
- quantity:{
-   type: Number,
-   required: false
- },
-totalPrice:{
-   type: Number,
-   required: false
- },
-}
-,
- {timestamps:true}
-)
+  },
+  pricePerTon: {
+    type: Number,
+    required: false
+  },
+  quantity: {
+    type: Number,
+    required: false
+  },
+  totalPrice: {
+    type: Number,
+    required: false
+  },
+  typeOfProduct: { 
+    type: String,
+    required: false
+  },
+  image: { 
+    type: String,
+    required: false
+  }
+}, { timestamps: true });
 function calculateTransactionAmount(quantity, pricePerTon) {
-   return quantity * pricePerTon;
+  return quantity * pricePerTon;
 }
 
 // Calculate tax amount
 function calculateTaxAmount(transactionAmount) {
-   return transactionAmount * 0.18; // Assuming 18% tax rate
+  return transactionAmount * 0.18; // Assuming 18% tax rate
 }
 
 const calculateTransactionAndTax = async function(next) {
    if (this.isModified('quantity') || this.isNew) {
        console.log('Stock quantity modified or new order:', this.quantity);
 
-       const transactionAmount = calculateTransactionAmount(this.quantity, this.pricePerTon);
-       console.log('Calculated Transaction Amount:', transactionAmount);
+      const transactionAmount = calculateTransactionAmount(this.quantity, this.pricePerTon);
+      console.log('Calculated Transaction Amount:', transactionAmount);
 
-       const taxAmount = calculateTaxAmount(transactionAmount);
-       console.log('Calculated Tax Amount:', taxAmount);
+      const taxAmount = calculateTaxAmount(transactionAmount);
+      console.log('Calculated Tax Amount:', taxAmount);
 
        const date = new Date();
        const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
@@ -90,9 +97,9 @@ const calculateTransactionAndTax = async function(next) {
        }
    }
 
-   next();
+  next();
 };
 
-orderSchema.pre('save', calculateTransactionAndTax);
-const stockModel = model('stock',orderSchema)
-export default stockModel
+stockSchema.pre('save', calculateTransactionAndTax);
+const stockModel = model('stock', stockSchema);
+export default stockModel;

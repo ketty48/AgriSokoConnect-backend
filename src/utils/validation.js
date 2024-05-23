@@ -37,11 +37,13 @@ export const signInValidations = [
 ];
 
 export const addStockValidations = [
-body("NameOfProduct", "Name of product is required").not().isEmpty(),
-    body("Description", "Description is required").not().isEmpty(),
-    body("quantity", "Quantity is required").not().isEmpty(),
-    body("pricePerTon", "pricePerTon is required").not().isEmpty()
-]
+    body('NameOfProduct').notEmpty().withMessage('Name of product is required'),
+    body('Description').notEmpty().withMessage('Description is required'),
+    body('pricePerTon').isNumeric().withMessage('Price per ton must be a number'),
+    body('quantity').isNumeric().withMessage('Quantity must be a number'),
+    body('typeOfProduct').notEmpty().withMessage('Type of product is required')
+  ];
+  
 
 export const addOrderValidations = [
    // body('productName').not().isEmpty().withMessage('Product name is required'),

@@ -149,26 +149,17 @@
         }
       }
     },
-    "/AgriSoko/user/auth/google":{
+    "/AgriSoko/user/getAllFarmers": {
       "get": {
-        "summary": "Google OAuth2.0 authentication",
-        "description": "Authenticate with Google",
+        "summary": "All farmers with their stock",
+        "description": "All Buyers with their orders",
         "tags": ["Authentication"],
         "responses": {
           "200": {
-            "description": "Redirect to Google login page"
-           }
-        }
-      }
-    },
-    "/AgriSoko/user/auth/google/callback": {
-      "get": {
-        "summary": "Google OAuth2.0 callback",
-        "description": "Callback endpoint for Google OAuth2.0 authentication",
-        "tags": ["Authentication"],
-        "responses": {
-          "200": {
-            "description": "Redirect to dashboard upon successful authentication"
+            "description": "Successful operation",
+            "schema": {
+              "type": "array"
+            }
           }
         }
       }
@@ -808,16 +799,93 @@
           "200": {
             "description": "Successful operation",
             "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/admin"
-              }
+              "type": "array"
+            }
+          }
+        }
+      }
+    },
+
+    "/AgriSoko/pay/momo": {
+      "post": {
+        "summary": "Pay your order",
+        "description": "pay your order",
+        "tags": ["Payment"],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful payed",
+            "schema": {
+              "type": "array"
+            }
+          }
+        }
+      }
+    },
+    "/AgriSoko/transaction/allFarmers": {
+      "get": {
+        "summary": "All farmers with their stock",
+        "description": "All Farmers with their stock",
+        "tags": ["Government"],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful",
+            "schema": {
+              "type": "array"
+            }
+          }
+        }
+      }
+    },
+    "/AgriSoko/transaction/allTransaction": {
+      "get": {
+        "summary": "All transaction",
+        "description": "All transaction",
+        "tags": ["Government"],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful ",
+            "schema": {
+              "type": "array"
+            }
+          }
+        }
+      }
+    },
+    "/AgriSoko/transaction/allTaxes": {
+      "get": {
+        "summary": "All Taxes",
+        "description": "All Taxes",
+        "tags": ["Government"],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful",
+            "schema": {
+              "type": "array"
             }
           }
         }
       }
     }
-  
   },
   "definitions": {
     "account": {

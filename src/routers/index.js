@@ -7,8 +7,9 @@ import profileRouter from './profile.routers.js';
 import orderRouter from './order.routes.js';
 import transactionRouter from './transaction.router.js'
 import adminRouter from './admin.router.js'
-import payRouter from '../controllers/payment.controller.js'
 import contactRouter from './contact.routes.js';
+import payRouter from './payment.router.js'
+
 const router = express.Router();
 
 

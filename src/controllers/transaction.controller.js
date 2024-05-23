@@ -39,7 +39,6 @@ const calculateTransactionAndTax = async function(next) {
 // Attach middleware to the schema
 Stock.schema.pre('save', calculateTransactionAndTax);
 
-
 export const getAllFarmersWithStock = asyncWrapper(async (req, res) => {
     try {
    
@@ -63,12 +62,33 @@ export const getAllFarmersWithStock = asyncWrapper(async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
-
 export const getAllTransactions = asyncWrapper(async (req, res) => {
-    const transactions = await TransactionAndTax.find({ type: 'Transaction' }).populate('users', 'email');
-    res.status(200).json({ transactions });
+    const transactions = await TransactionAndTax.find({ type: 'Transaction' }).populate('user', 'email');
+    const transactionsWithNames = await Promise.all(transactions.map(async (transaction) => {
+        const profile = await Profile.findOne({ user: transaction.user._id }).select('fullName');
+        return {
+            ...transaction.toObject(),
+            user: {
+                ...transaction.user.toObject(),
+                fullName: profile ? profile.fullName : null
+            }
+        };
+    }));
+
+    res.status(200).json({ transactions: transactionsWithNames });
 });
 export const getAllTaxes = asyncWrapper(async (req, res) => {
-    const taxes = await TransactionAndTax.find({ type: 'Tax' }).populate('users', 'email');
-    res.status(200).json({ taxes });
+    const taxes = await TransactionAndTax.find({ type: 'Tax' }).populate('user', 'email');
+    const taxesWithNames = await Promise.all(taxes.map(async (tax) => {
+        const profile = await Profile.findOne({ user: tax.user._id }).select('fullName');
+        return {
+            ...tax.toObject(),
+            user: {
+                ...tax.user.toObject(),
+                fullName: profile ? profile.fullName : null
+            }
+        };
+    }));
+
+    res.status(200).json({ taxes: taxesWithNames });
 });

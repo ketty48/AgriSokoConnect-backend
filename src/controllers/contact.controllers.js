@@ -21,7 +21,7 @@ export const addContact = asyncWrapper(async (req, res, next) => {
 
   await newContact.save();
 
-  const websiteOwnerEmail = "hildenancyisingizwe@gmail.com";
+  const websiteOwnerEmail = "ketymagnifique@gmail.com";
   const emailSubject = `New Contact Form Submission: ${subject}`;
   const emailBody = `
         Dear Website Owner,

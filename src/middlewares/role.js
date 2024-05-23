@@ -1,31 +1,38 @@
-import jwt from 'jsonwebtoken';
-import User from '../models/users.model.js';
-import configuration from '../configs/index.js';
-import Role from '../models/role.model.js';
+import jwt from "jsonwebtoken";
+import configuration from "../configs/index.js";
 
-const authorizeRoles = (roles) => {
-    return async (req, res, next) => {
+// Middleware to extract user role from token in the Authorization header
+export const attachUserRole = (req, res, next) => {
+    try {
+        const authorizationHeader = req.headers.authorization;
+        if (!authorizationHeader || !authorizationHeader.startsWith("Bearer ")) {
+            return res.status(401).json({ message: 'No token provided.' });
+        }
+
+        const token = authorizationHeader.split(" ")[1];
+        const decoded = jwt.verify(token, configuration.JWT_SECRET);
+        const userRole = decoded.role;
+
+        req.userRole = userRole;
+        console.log(req.userRole);
+        next();
+    } catch (error) {
+        console.error(error);
+        res.status(401).json({ message: 'Not authorized.' });
+    }
+};
+
+// Middleware to authorize roles
+export const authorizeRoles = (roles) => {
+    return (req, res, next) => {
         try {
-            const token = req.headers.authorization.split(' ')[1];
-            const decoded = jwt.verify(token, configuration.JWT_SECRET);
-
-            const user = await User.findById(decoded.id).populate('role'); // Populate role directly if stored as reference
-            if (!user) {
-                return res.status(401).json({ message: 'User not found.' });
-            }
-
-            const userRole = await Role.findById(user.role);
-            if (!userRole || !roles.includes(userRole.role)) {
+            if (!req.userRole || !roles.includes(req.userRole)) {
                 return res.status(403).json({ message: 'Access denied.' });
             }
-
-            req.user = user;
             next();
         } catch (error) {
             console.error(error);
             res.status(401).json({ message: 'Not authorized.' });
         }
     };
-}
-
-export { authorizeRoles };
+};

@@ -4,10 +4,7 @@ import mongoose from "mongoose";
 import configurations from "./configs/index.js";
 import Routers from "./routers/index.js";
 import swaggerUi from "swagger-ui-express";
-//import swaggerDocument from "./docs/swagger.json";
-
-//const swaggerDocument = require("./docs/swagger.json");
-//import swaggerUi from "swagger-ui-express/dist/swagger-ui-express";
+import cookieParser from 'cookie-parser';
 import swaggerDocument from "./docs/swagger.json" assert { type: "json" };
 import bodyParser from "body-parser";
 //import swaggerDocumentation from "./docs/swagger.json";
@@ -25,6 +22,7 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended:false }));
+app.use(cookieParser());
 app.use('/AgriSoko', Routers);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use('/', (req, res) => {

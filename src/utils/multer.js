@@ -1,25 +1,23 @@
-import multer from "multer";
-import path from "path";
+// src/routes/stock.routes.js
+import express from 'express';
+import multer from 'multer';
+import { addStock } from '../controllers/stock.controllers.js';
 
+// Define storage for multer
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads/");
+    cb(null, 'uploads/'); // Ensure this directory exists
   },
   filename: (req, file, cb) => {
-    cb(null, new Date().toISOString().replace(/:/g, '-') + path.extname(file.originalname));
+    cb(null, `${Date.now()}-${file.originalname}`);
   }
 });
 
-// const fileFilter = (req, file, cb) => {
-//   if (file.mimetype === "image/jpeg" || file.mimetype === "image/png") {
-//     cb(null, true);
-//   } else {
-//     cb(new Error("Only images are allowed"), false);
-//   }
-// };
+// Initialize multer with storage configuration
+const upload = multer({ storage });
 
-const upload = multer({ storage: storage});
+const router = express.Router();
 
-// const uploadImage = upload.single('image'); // Ensure the field name is 'image'
 
-export default upload;
+
+export default router;

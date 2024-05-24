@@ -4,49 +4,50 @@ import { NotFoundError, BadRequestError } from "../errors/index.js";
 import { validationResult } from "express-validator";
 import userModel from "../models/users.model.js";
 import { sendEmail } from "../utils/sendEmail.js";
+import cloudinary from "cloudinary";
+import dotenv from "dotenv";
+dotenv.config();
+cloudinary.v2.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.API_KEY,
+  api_secret: process.env.API_SECRET,
+});
 
 export const addStock = [
   asyncWrapper(async (req, res, next) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      throw new BadRequestError(errors.array()[0].msg);
+    const { NameOfProduct, ...otherFields } = req.body;
+    if (!req.files || !("image" in req.files)) {
+      return res.json({ message: "err" });
     }
-
-    const { NameOfProduct, description, pricePerTon, quantity, typeOfProduct } =
-      req.body;
-      
-      const image = req.file ? req.file.filename : null
-    if (!NameOfProduct) {
-      throw new BadRequestError("Name of product is required");
-    }
-
-    const userId = req.user.id;
-    const totalPrice = pricePerTon * quantity;
+    const dateNow = Date.now();
+    const Photo = `${NameOfProduct}_Photo_${dateNow}`;
+    const profileP = await cloudinary.v2.uploader.upload(
+      req.files.image[0].path,
+      {
+        folder: "uploads",
+        public_id: Photo,
+      }
+    );
 
     const newStock = new stockModel({
       NameOfProduct,
-      description,
-      pricePerTon,
-      quantity,
-      totalPrice,
-      typeOfProduct,
-      user: userId,
-      image
+      image: profileP.secure_url,
+      ...otherFields,
     });
 
     await newStock.save();
 
-    const user = await userModel.findById(userId);
-    const recipientEmail = user.email;
-    const subject = "Stock Added";
-    const body = `Dear ${user.email},\n\nA new stock item (${newStock.NameOfProduct}) has been added successfully. Description: ${newStock.description}, Quantity: ${newStock.quantity}, Price per Ton: ${newStock.pricePerTon}, Total Price: ${newStock.totalPrice}.\n\n`;
+    // const user = await userModel.findById(userId);
+    // const recipientEmail = user.email;
+    // const subject = "Stock Added";
+    // const body = `Dear ${user.email},\n\nA new stock item (${newStock.NameOfProduct}) has been added successfully. Description: ${newStock.description}, Quantity: ${newStock.quantity}, Price per Ton: ${newStock.pricePerTon}, Total Price: ${newStock.totalPrice}.\n\n`;
 
-    try {
-      await sendEmail(recipientEmail, subject, body);
-      console.log("Notification email sent successfully");
-    } catch (error) {
-      console.error("Error sending notification email:", error);
-    }
+    // try {
+    //   await sendEmail(recipientEmail, subject, body);
+    //   console.log("Notification email sent successfully");
+    // } catch (error) {
+    //   console.error("Error sending notification email:", error);
+    // }
 
     res.status(201).json({
       status: "Stock added successfully",

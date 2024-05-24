@@ -19,7 +19,7 @@ stockRouter.delete('/delete/:id',attachUserRole, authorizeRoles(['farmer']), del
 stockRouter.get('/retrieve/:id',attachUserRole, authorizeRoles(['farmer']),getStockByID)
 stockRouter.get('/allOrders',attachUserRole, authorizeRoles(['farmer']),getAllOrders)
 stockRouter.get('/getOrder/:id',attachUserRole, authorizeRoles(['farmer']),getOrder)
-stockRouter.get('/Retrieve',attachUserRole, authorizeRoles(['farmer','buyer']), getStocks);
+stockRouter.get('/getAll',attachUserRole, authorizeRoles(['farmer','buyer']), getStocks);
 
 
 export default stockRouter;

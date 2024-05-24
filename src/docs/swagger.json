@@ -321,7 +321,7 @@
         }
       }
     }},
-    "/AgriSoko/stock/Retrieve": {
+    "/AgriSoko/stock/getAll": {
       "get": {
         "summary": "Get all stocks",
         "description": "Retrieve all stocks",

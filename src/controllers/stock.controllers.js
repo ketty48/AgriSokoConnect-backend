@@ -61,20 +61,28 @@ export const addStock = [
 ];
 
 export const getStock = asyncWrapper(async (req, res, next) => {
-  let params = stockModel.find({ user: req.user.id });
-  if (req.params.sortBy) {
-    const sortBy = req.params.sortBy;
-    params = params.sort({ [sortBy]: 1 });
+  try {
+    let query = stockModel.find({ user: req.user.id });
+
+
+    if (req.query.sortBy) {
+      const sortBy = req.query.sortBy;
+      query = query.sort({ [sortBy]: 1 });
+    }
+    if (req.query.category) {
+      const category = req.query.category;
+      query = query.find({ category });
+    }
+
+    const stocks = await query.exec();
+
+    res.status(200).json({
+      status: "All stock available",
+      data: stocks,
+    });
+  } catch (error) {
+    next(error);
   }
-  if (req.params.category) {
-    const category = req.params.category;
-    params = params.sort({ [category]: 1 });
-  }
-  const stocks = await params;
-  res.status(200).json({
-    status: "All stock available",
-    stocks,
-  });
 });
 
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);

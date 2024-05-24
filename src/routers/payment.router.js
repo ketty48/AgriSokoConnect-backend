@@ -3,5 +3,5 @@ import express from 'express';
 const app = express();
 import {requireAuth} from '../middlewares/authorization.js'
 app.use(requireAuth)
-app.post('/momo',initiatePayment)
+app.get('/momo',initiatePayment)
 export default app

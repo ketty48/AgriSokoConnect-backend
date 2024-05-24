@@ -86,7 +86,7 @@ Agriconnect`;
 });
 export const getAllOrders = asyncWrapper(async (req, res, next) => {
   try {
-    const orders = await orderModel.find();
+    const orders = await orderModel.find({ user: req.user.id });
     res.status(200).json({ success: true, data: orders });
   } catch (error) {
     next(error);
@@ -96,8 +96,8 @@ export const getAllOrders = asyncWrapper(async (req, res, next) => {
 export const getOrder = asyncWrapper(async (req, res, next) => {
   try {
     const orderId = req.params.id;
-
-    const order = await orderModel.findById(orderId);
+    const userId = req.user.id;
+    const order = await orderModel.findOne({_id: orderId, user: userId });
     if (!order) {
       throw new NotFoundError("Order not found");
     }
@@ -110,7 +110,7 @@ export const getOrder = asyncWrapper(async (req, res, next) => {
 export const updateOrder = asyncWrapper(async (req, res, next) => {
   try {
     const orderId = req.params.id;
-
+    // const userId = req.user.id;
     const order = await orderModel.findById(orderId);
     if (!order) {
       throw new NotFoundError("Order not found");
@@ -196,8 +196,8 @@ Agriconnect`;
 export const deleteOrder = asyncWrapper(async (req, res, next) => {
   try {
     const orderId = req.params.id;
-
-    const order = await orderModel.findByIdAndDelete(orderId);
+    const userId = req.user.id;
+    const order = await orderModel.findByOneAndDelete({_id: orderId, user: userId });
     if (!order) {
       throw new NotFoundError("Order not found");
     }

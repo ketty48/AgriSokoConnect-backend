@@ -61,7 +61,7 @@ export const addStock = [
 ];
 
 export const getStock = asyncWrapper(async (req, res, next) => {
-  let params = stockModel.find();
+  let params = stockModel.find({ user: req.user.id });
   if (req.params.sortBy) {
     const sortBy = req.params.sortBy;
     params = params.sort({ [sortBy]: 1 });

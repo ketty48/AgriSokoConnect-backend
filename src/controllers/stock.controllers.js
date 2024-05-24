@@ -77,18 +77,31 @@ export const getStock = asyncWrapper(async (req, res, next) => {
   });
 });
 
+const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
+
 export const getStockByID = asyncWrapper(async (req, res, next) => {
   const stockId = req.params.id;
   const userId = req.user.id;
+
+  // Validate stockId and userId
+  if (!isValidObjectId(stockId)) {
+    return next(new BadRequestError("Invalid stock ID"));
+  }
+  if (!isValidObjectId(userId)) {
+    return next(new BadRequestError("Invalid user ID"));
+  }
+
   try {
     const stock = await stockModel
       .findOne({ _id: stockId, user: userId })
-      .populate("user", "name");
+      .populate('user', 'name');
+
     if (!stock) {
       return next(new NotFoundError("Stock not found"));
     }
+
     res.status(200).json({
-      status: "Stock found",
+      status: "success",
       data: {
         stock,
       },

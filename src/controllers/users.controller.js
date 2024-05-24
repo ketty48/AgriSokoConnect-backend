@@ -243,27 +243,27 @@ export const ResetPassword = asyncWrapper(async (req, res, next) => {
 });
 export const getAllFarmersStock = async (req, res) => {
     try {
+        // Fetch users and populate the role
         const users = await UserModel.find().populate('role').exec();
-        // console.log('Fetched users:', users);
+        console.log('Fetched users:', users);
 
         // Filter users to get only farmers
         const farmers = users.filter(user => user.role && user.role.role === 'farmer');
-     
+        console.log('Filtered farmers:', farmers);
+
+        // Fetch profiles of the filtered farmers
         const profiles = await profileModel.find({ user: { $in: farmers.map(farmer => farmer._id) } }).exec();
-   
+        console.log('Fetched profiles for farmers:', profiles);
 
         // Retrieve stock items for each farmer by user ID
         const farmersWithStock = await Promise.all(profiles.map(async (profile) => {
-           
-
             // Fetch stock items based on user ID
             const stockItems = await Stock.find({ user: profile.user }).exec();
-           
+            console.log(`Stock items for farmer ${profile.fullName}:`, stockItems);
 
             return { farmer: profile.fullName, stock: stockItems };
         }));
 
- 
         res.json({ farmersWithStock });
     } catch (error) {
         console.error('Error fetching farmers with stock:', error);

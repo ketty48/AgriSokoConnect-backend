@@ -111,3 +111,4 @@ stockSchema.pre('save', calculateTransactionAndTax);
 
 const stockModel = model('stock', stockSchema);
 export default stockModel;
+

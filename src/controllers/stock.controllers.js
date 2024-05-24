@@ -15,6 +15,7 @@ cloudinary.v2.config({
 
 export const addStock = [
   asyncWrapper(async (req, res, next) => {
+    const userId=req.user.id;
     const { NameOfProduct, ...otherFields } = req.body;
     if (!req.files || !("image" in req.files)) {
       return res.json({ message: "err" });
@@ -30,6 +31,7 @@ export const addStock = [
     );
 
     const newStock = new stockModel({
+      user:req.user.id,
       NameOfProduct,
       image: profileP.secure_url,
       ...otherFields,
@@ -37,17 +39,17 @@ export const addStock = [
 
     await newStock.save();
 
-    // const user = await userModel.findById(userId);
-    // const recipientEmail = user.email;
-    // const subject = "Stock Added";
-    // const body = `Dear ${user.email},\n\nA new stock item (${newStock.NameOfProduct}) has been added successfully. Description: ${newStock.description}, Quantity: ${newStock.quantity}, Price per Ton: ${newStock.pricePerTon}, Total Price: ${newStock.totalPrice}.\n\n`;
+     const user = await userModel.findById(userId);
+    const recipientEmail = user.email;
+    const subject = "Stock Added";
+    const body = `Dear ${user.email},\n\nA new stock item (${newStock.NameOfProduct}) has been added successfully. Description: ${newStock.description}, Quantity: ${newStock.quantity}, Price per Ton: ${newStock.pricePerTon}, Total Price: ${newStock.totalPrice}.\n\n`;
 
-    // try {
-    //   await sendEmail(recipientEmail, subject, body);
-    //   console.log("Notification email sent successfully");
-    // } catch (error) {
-    //   console.error("Error sending notification email:", error);
-    // }
+    try {
+      await sendEmail(recipientEmail, subject, body);
+      console.log("Notification email sent successfully");
+    } catch (error) {
+      console.error("Error sending notification email:", error);
+    }
 
     res.status(201).json({
       status: "Stock added successfully",

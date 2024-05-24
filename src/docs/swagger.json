@@ -321,6 +321,32 @@
         }
       }
     }},
+    "/AgriSoko/stock/Retrieve": {
+      "get": {
+        "summary": "Get all stocks",
+        "description": "Retrieve all stocks",
+        "tags": ["Stock"],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Stock"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }},
     "/AgriSoko/stock/retrieve/{id}": {
       "get": {
         "summary": "Get stock by ID",

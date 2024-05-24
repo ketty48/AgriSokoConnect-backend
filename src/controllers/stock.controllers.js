@@ -84,6 +84,30 @@ export const getStock = asyncWrapper(async (req, res, next) => {
     next(error);
   }
 });
+export const getStocks = asyncWrapper(async (req, res, next) => {
+  try {
+    let query = stockModel.find();
+
+
+    if (req.query.sortBy) {
+      const sortBy = req.query.sortBy;
+      query = query.sort({ [sortBy]: 1 });
+    }
+    if (req.query.category) {
+      const category = req.query.category;
+      query = query.find({ category });
+    }
+
+    const stocks = await query.exec();
+
+    res.status(200).json({
+      status: "All stock available",
+      data: stocks,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
 
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 

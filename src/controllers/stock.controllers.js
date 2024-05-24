@@ -88,27 +88,29 @@ export const getStocks = asyncWrapper(async (req, res, next) => {
   try {
     let query = stockModel.find();
 
-
+    // Sort stocks if sortBy parameter is provided
     if (req.query.sortBy) {
       const sortBy = req.query.sortBy;
       query = query.sort({ [sortBy]: 1 });
     }
     if (req.query.category) {
       const category = req.query.category;
+      // console.log('Filtering by category:', category);
       query = query.find({ category });
     }
 
     const stocks = await query.exec();
-
+    // console.log('Query:', query);
+    // console.log('Retrieved stocks:', stocks);
     res.status(200).json({
       status: "All stock available",
       data: stocks,
     });
   } catch (error) {
+   
     next(error);
   }
 });
-
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
 export const getStockByID = asyncWrapper(async (req, res, next) => {

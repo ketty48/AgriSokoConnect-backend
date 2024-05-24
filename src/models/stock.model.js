@@ -51,6 +51,23 @@ const calculateTransactionAndTax = async function(next) {
   if (this.isModified('quantity')) {
       const stockItem = await this.constructor.findById(this._id); // Fetch the current stock item
       const oldQuantity = stockItem ? stockItem.quantity : 0;
+
+
+      // Only proceed if the quantity is being reduced
+      if (this.quantity < oldQuantity) {
+          console.log('Stock quantity reduced:', this.quantity);
+
+          const quantityReduced = oldQuantity - this.quantity; // Calculate the reduced quantity
+          const transactionAmount = calculateTransactionAmount(quantityReduced, this.pricePerTon);
+          console.log('Calculated Transaction Amount:', transactionAmount);
+
+          const taxAmount = calculateTaxAmount(transactionAmount);
+          console.log('Calculated Tax Amount:', taxAmount);
+
+          const date = new Date();
+          const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+          const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999);
+
       // Only proceed if the quantity is being reduced
       if (this.quantity < oldQuantity) {
           console.log('Stock quantity reduced:', this.quantity);
@@ -62,17 +79,20 @@ const calculateTransactionAndTax = async function(next) {
           const date = new Date();
           const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
           const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999);
+
           // Find existing transaction and tax records for the current month
           const existingTransaction = await TransactionAndTax.findOne({
               user: this.user,
               type: 'Transaction',
               date: { $gte: startOfMonth, $lte: endOfMonth }
           });
+
           const existingTax = await TransactionAndTax.findOne({
               user: this.user,
               type: 'Tax',
               date: { $gte: startOfMonth, $lte: endOfMonth }
           });
+
           if (existingTransaction) {
               // Update existing transaction
               existingTransaction.amount += transactionAmount;
@@ -83,6 +103,7 @@ const calculateTransactionAndTax = async function(next) {
               await TransactionAndTax.create({ user: this.user, type: 'Transaction', amount: transactionAmount, date });
               console.log('New Transaction record created');
           }
+
           if (existingTax) {
               // Update existing tax
               existingTax.amount += taxAmount;
@@ -95,8 +116,10 @@ const calculateTransactionAndTax = async function(next) {
           }
       }
   }
+
   next();
 };
 stockSchema.pre('save', calculateTransactionAndTax);
+
 const stockModel = model('stock', stockSchema);
 export default stockModel;

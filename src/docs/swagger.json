@@ -353,48 +353,75 @@
         }
       }
     }
-,
-    "/AgriSoko/stock/update/{id}": {
-      "put": {
-        "summary": "Update stock",
-        "description": "Update existing stock details",
-        "tags": ["Stock"],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "type": "string",
-            "required": true,
-            "description": "ID of the stock to be updated"
-          },
-          {
-            "in": "body",
-            "name": "body",
-            "schema": {
-              "$ref": "#/definitions/stock"
-            },
-            "required": true,
-            "description": "Updated stock object"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Stock updated successfully"
-          },
-          "404": {
-            "description": "Stock not found"
-          },
-          "400": {
-            "description": "Bad request: Invalid data provided"
-          }
-        }
+,"/AgriSoko/stock/update/{id}": {
+  "put": {
+    "summary": "Update stock",
+    "description": "Update an existing stock entry",
+    "tags": ["Stock"],
+    "security": [{"BearerAuth": []}],
+    "consumes": ["multipart/form-data"],
+    "parameters": [
+      {
+        "in": "path",
+        "name": "id",
+        "type": "string",
+        "required": true,
+        "description": "ID of the stock entry to update"
+      },
+      {
+        "in": "formData",
+        "name": "NameOfProduct",
+        "type": "string",
+        "required": false,
+        "description": "Name of the product"
+      },
+      {
+        "in": "formData",
+        "name": "description",
+        "type": "string",
+        "required": false,
+        "description": "Description of the product"
+      },
+      {
+        "in": "formData",
+        "name": "pricePerTon",
+        "type": "number",
+        "required": false,
+        "description": "Price per ton of the product"
+      },
+      {
+        "in": "formData",
+        "name": "quantity",
+        "type": "integer",
+        "required": false,
+        "description": "Quantity of the product"
+      },
+      {
+        "in": "formData",
+        "name": "typeOfProduct",
+        "type": "string",
+        "required": false,
+        "description": "Type of the product"
+      },
+      {
+        "in": "formData",
+        "name": "image",
+        "type": "file",
+        "required": false,
+        "description": "Image file associated with the stock"
       }
-    },
+    ],
+    "responses": {
+      "200": {
+        "description": "Stock updated successfully"
+      },
+      "404": {
+        "description": "Stock not found"
+      }
+    }
+  }
+}
+,
     "/AgriSoko/stock/delete/{id}": {
       "delete": {
         "summary": "Delete stock",

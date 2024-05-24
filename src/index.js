@@ -19,11 +19,12 @@ const corsOptions = {
 
 const app = express();
 app.use(cors(corsOptions));
+app.options('*',cors(corsOptions))
 app.use(express.json());
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended:false }));
 app.use(cookieParser());
-app.options('*',cors(corsOptions))
+
 app.use('/AgriSoko', Routers,);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use('/', (req, res) => {

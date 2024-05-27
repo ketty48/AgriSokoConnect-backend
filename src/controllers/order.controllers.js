@@ -38,6 +38,7 @@ export const addOrder = asyncWrapper(async (req, res, next) => {
         Description: product.description,
         pricePerTon: product.pricePerTon,
         quantity: item.quantity,
+        typeOfProduct:item.typeOfProduct,
         itemTotalPrice
       };
     }));

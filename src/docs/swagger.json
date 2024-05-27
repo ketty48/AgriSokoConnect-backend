@@ -1105,6 +1105,10 @@
         "quantity": {
           "type": "number",
           "description": "The quantity you will receive"
+        },
+        "typeOfProduct": {
+          "type": "string",
+          "description": "The quality you want"
         }
       },
       "required": ["NameOfProduct", "quantity"]

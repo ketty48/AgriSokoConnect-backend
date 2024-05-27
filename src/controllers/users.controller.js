@@ -191,15 +191,19 @@ export const ForgotPassword = asyncWrapper(async (req, res, next) => {
         expirationDate: new Date().getTime() + (60 * 1000 * 5),
     });
 
-    const link = `http://localhost:5173/reset?token=${token}&id=${foundUser.id}`;
-    const emailBody = `Click on the link bellow to reset your password\n\n${link}`;
+    const link = `http://localhost:5173/reset?id=${foundUser.id}`;
+    const emailBody = `Click on the link below to reset your password\n\n${link}`;
 
     await sendEmail(req.body.email, "Reset your password", emailBody);
+
+    // Set the token in the response headers
+    res.setHeader('Authorization', `Bearer ${token}`);
 
     res.status(200).json({
         message: "We sent you a reset password link on your email!",
     });
 });
+
 
 export const ResetPassword = asyncWrapper(async (req, res, next) => {
     // Validation
@@ -208,15 +212,16 @@ export const ResetPassword = asyncWrapper(async (req, res, next) => {
         return next(new BadRequestError(errors.array()[0].msg));
     };
 
-    // Verify token
-    const decoded = await jwt.verify(req.body.token, configuration.JWT_SECRET);
+    // Verify token from headers
+    const token = req.headers.authorization.replace('Bearer ', '');
+    const decoded = await jwt.verify(token, configuration.JWT_SECRET);
     if (!decoded) {
         return next(new BadRequestError("Invalid token!"));
     }
 
-    const recordedToken = await Token.findOne({ token: req.body.token });
-    
-    if (decoded.id!= req.body.id || recordedToken.user!= req.body.id) {
+    const recordedToken = await Token.findOne({ token });
+
+    if (decoded.id !== req.body.id || recordedToken.user !== req.body.id) {
         return next(new BadRequestError("Invalid token!"));
     }
 
@@ -230,7 +235,7 @@ export const ResetPassword = asyncWrapper(async (req, res, next) => {
         return next(new BadRequestError("User not found!"));
     };
 
-    await Token.deleteOne({ token: req.body.token });
+    await Token.deleteOne({ token });
     const hashedPassword = await bcryptjs.hashSync(req.body.password, 10);
     foundUser.password = hashedPassword;
 
@@ -241,6 +246,7 @@ export const ResetPassword = asyncWrapper(async (req, res, next) => {
         })
     }
 });
+
 export const getAllFarmersStock = async (req, res) => {
     try {
         // Fetch users and populate the role

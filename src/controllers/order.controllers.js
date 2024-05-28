@@ -8,25 +8,15 @@ import stockModel from "../models/stock.model.js";
 
 export const addOrder = asyncWrapper(async (req, res, next) => {
   try {
-    const requiredFields = [
-      "selectedStockItems",
-      "phoneNumber",
-      "shippingAddress",
-    ];
+    const requiredFields = ["selectedStockItems", "phoneNumber", "shippingAddress"];
+    
     const missingFields = requiredFields.filter((field) => !req.body[field]);
     if (missingFields.length > 0) {
-      throw new BadRequestError(
-        `Missing required fields: ${missingFields.join(", ")}`
-      );
-    }
-
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      const errorMessages = errors.array().map((error) => error.msg);
-      throw new BadRequestError(errorMessages.join(", "));
+      throw new BadRequestError(`Missing required fields: ${missingFields.join(", ")}`);
     }
 
     const { selectedStockItems, phoneNumber, shippingAddress } = req.body;
+    console.log(selectedStockItems)
     const customer = req.user._id;
     const user = await userModel.findById(customer);
     if (!user) {
@@ -35,22 +25,27 @@ export const addOrder = asyncWrapper(async (req, res, next) => {
 
     let totalAmount = 0;
     const updatedStockItems = await Promise.all(selectedStockItems.map(async (item) => {
-      const product = await stockModel.findOne({ NameOfProduct: item.NameOfProduct });
-      if (!product) {
-        throw new NotFoundError(`Product not found: ${item.NameOfProduct}`);
+      const productName = item.NameOfProduct;
+      const stockItem = await stockModel.findOne({ NameOfProduct: productName });
+      if (!stockItem) {
+        throw new NotFoundError(`Stock item not found: ${productName}`);
       }
-      const itemTotalPrice = item.quantity * product.pricePerTon;
+      const typeOfProduct = stockItem.typeOfProduct;
+      const itemTotalPrice = item.quantity * stockItem.pricePerTon;
       totalAmount += itemTotalPrice;
       return {
-        _id: product._id, // Use product ID instead of name
-        NameOfProduct: product.NameOfProduct,
-        Description: product.description,
-        pricePerTon: product.pricePerTon,
+        _id: stockItem._id, // Use the ID of the found stock item
+        NameOfProduct: stockItem.NameOfProduct,
+        Description: stockItem.description,
+        pricePerTon: stockItem.pricePerTon,
         quantity: item.quantity,
-        typeOfProduct:item.typeOfProduct,
+        typeOfProduct,
         itemTotalPrice
       };
     }));
+    
+
+    // The rest of your code remains unchanged...
 
 
     const newOrder = new orderModel({
@@ -69,9 +64,7 @@ export const addOrder = asyncWrapper(async (req, res, next) => {
 
     await Promise.all(
       updatedStockItems.map(async (item) => {
-        const stock = await stockModel.findOne({
-          NameOfProduct: item.NameOfProduct,
-        });
+        const stock = await stockModel.findById(item._id);
         if (stock) {
           stock.quantity -= item.quantity;
           stock.totalPrice = stock.quantity * stock.pricePerTon; // Update total price
@@ -101,6 +94,7 @@ export const addOrder = asyncWrapper(async (req, res, next) => {
     next(error);
   }
 });
+
 
 export const getAllOrders = asyncWrapper(async (req, res, next) => {
   try {

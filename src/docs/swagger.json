@@ -657,6 +657,35 @@
         }
       }
     },
+    "/AgriSoko/order/remove/{id}": {
+      "delete": {
+        "summary": "Delete order",
+        "description": "Delete an existing order by its ID",
+        "tags": ["Order"],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "type": "string",
+            "required": true,
+            "description": "ID of the order to be deleted"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Order deleted successfully"
+          },
+          "404": {
+            "description": "Order not found"
+          }
+        }
+      }
+    },
     "AgriSoko/contact/add":{
    "post":{
     "summary":"Send Message",
@@ -1131,10 +1160,6 @@
         "quantity": {
           "type": "number",
           "description": "The quantity you will receive"
-        },
-        "typeOfProduct": {
-          "type": "string",
-          "description": "The quality you want"
         }
       },
       "required": ["NameOfProduct", "quantity","typeOfProduct"]

@@ -14,10 +14,9 @@ cloudinary.v2.config({
   api_key: process.env.API_KEY,
   api_secret: process.env.API_SECRET,
 });
-
 export const addStock = [
   asyncWrapper(async (req, res, next) => {
-    const userId=req.user.id;
+    const userId = req.user.id;
     const { NameOfProduct, ...otherFields } = req.body;
     if (!req.files || !("image" in req.files)) {
       return res.json({ message: "err" });
@@ -33,7 +32,7 @@ export const addStock = [
     );
 
     const newStock = new stockModel({
-      user:req.user.id,
+      user: req.user.id,
       NameOfProduct,
       image: profileP.secure_url,
       ...otherFields,
@@ -41,7 +40,7 @@ export const addStock = [
 
     await newStock.save();
 
-     const user = await userModel.findById(userId);
+    const user = await userModel.findById(userId);
     const recipientEmail = user.email;
     const subject = "Stock Added";
     const body = `Dear ${user.email},\n\nA new stock item (${newStock.NameOfProduct}) has been added successfully. Description: ${newStock.description}, Quantity: ${newStock.quantity}, Price per Ton: ${newStock.pricePerTon}, Total Price: ${newStock.totalPrice}.\n\n`;
@@ -53,12 +52,18 @@ export const addStock = [
       console.error("Error sending notification email:", error);
     }
 
-    res.status(201).json({
+    // Manually include the totalPrice property in the response body
+    const responseData = {
       status: "Stock added successfully",
       data: {
-        newStock,
+        newStock: {
+          ...newStock.toJSON(),
+          totalPrice: newStock.totalPrice,
+        },
       },
-    });
+    };
+
+    res.status(201).json(responseData);
   }),
 ];
 

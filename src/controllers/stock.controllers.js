@@ -6,6 +6,8 @@ import userModel from "../models/users.model.js";
 import { sendEmail } from "../utils/sendEmail.js";
 import cloudinary from "cloudinary";
 import dotenv from "dotenv";
+import Order from '../models/order.model.js'
+import Profile from '../models/editProfile.model.js'
 dotenv.config();
 cloudinary.v2.config({
   cloud_name: process.env.CLOUD_NAME,
@@ -205,3 +207,29 @@ export const deleteStock = asyncWrapper(async (req, res, next) => {
     status: "Stock deleted successfully",
   });
 });
+export const getOrdersByFarmerId = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const farmerStockItems = await stockModel.find({ user: userId });
+    const productNames = farmerStockItems.map(stockItem => stockItem.NameOfProduct);
+    const orders = await Order.find({ 'selectedStockItems.NameOfProduct': { $in: productNames } })
+      .populate('customer', 'email')  // Populate user email initially
+
+    const ordersWithProfiles = await Promise.all(orders.map(async order => {
+      const profile = await Profile.findOne({ user: order.customer._id });
+      return {
+        ...order.toObject(),
+        customer: {
+          ...order.customer.toObject(),
+          fullName: profile ? profile.fullName : null,
+          phoneNumber: profile ? profile.PhoneNumber : null
+        }
+      };
+    }));
+
+    res.status(200).send(ordersWithProfiles);
+  } catch (error) {
+    console.error('Error retrieving orders for farmer:', error);
+    res.status(500).send({ error: 'Error retrieving orders.' });
+  }
+};

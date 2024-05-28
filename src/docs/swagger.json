@@ -1137,7 +1137,7 @@
           "description": "The quality you want"
         }
       },
-      "required": ["NameOfProduct", "quantity"]
+      "required": ["NameOfProduct", "quantity","typeOfProduct"]
     },
  
   "contactCreate":{

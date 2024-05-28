@@ -37,7 +37,7 @@ export const signInValidations = [
 ];
 
 export const addStockValidations = [
-    body('NameOfProduct').notEmpty().withMessage('Name of product is required'),
+    //body('NameOfProduct').notEmpty().withMessage('Name of product is required'),
     body('Description').notEmpty().withMessage('Description is required'),
     body('pricePerTon').isNumeric().withMessage('Price per ton must be a number'),
     body('quantity').isNumeric().withMessage('Quantity must be a number'),

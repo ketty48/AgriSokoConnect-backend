@@ -1134,10 +1134,6 @@
         },
         "typeOfProduct": {
           "type": "string",
-          "description": "Type of the product"
-        },
-        "typeOfProduct": {
-          "type": "string",
           "description": "The quality you want"
         }
       },

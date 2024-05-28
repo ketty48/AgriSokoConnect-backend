@@ -8,7 +8,7 @@ orderRouter.use(requireAuth);
  orderRouter.post('/create',attachUserRole, authorizeRoles(['buyer']),addOrderValidations, addOrder);
  orderRouter.get('/retrieve',attachUserRole, authorizeRoles(['buyer']), getAllOrders);
 orderRouter.put('/update/:id',attachUserRole, authorizeRoles(['buyer']), addOrderValidations, updateOrder);
- orderRouter.delete('/delete/:id',attachUserRole, authorizeRoles(['buyer']), deleteOrder);
+ orderRouter.delete('/delete/:id',attachUserRole, authorizeRoles(['buyer','admin']), deleteOrder);
 orderRouter.get('/retrieve/:id', attachUserRole, authorizeRoles(['buyer']),getOrder);
 
 export default orderRouter;

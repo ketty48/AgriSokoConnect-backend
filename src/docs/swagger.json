@@ -1079,9 +1079,13 @@
         "quantity": {
           "type": "number",
           "description": "The quantity you will receive"
+        },
+        "typeOfProduct": {
+          "type": "string",
+          "description": "Type of the product"
         }
       },
-      "required": ["NameOfProduct", "quantity"]
+      "required": ["NameOfProduct", "quantity","typeOfProduct"]
     },
  
   "contactCreate":{

@@ -182,7 +182,7 @@ export const ForgotPassword = asyncWrapper(async (req, res, next) => {
     };
 
     // Generate token
-    const token = jwt.sign({ id: foundUser.id }, configuration.JWT_SECRET, { expiresIn: "15m" });
+    const token = jwt.sign({ id: foundUser.id }, configuration.JWT_SECRET, { expiresIn: "30m" });
 
     // Recording the token to the database
     await Token.create({

@@ -34,28 +34,24 @@ export const addOrder = asyncWrapper(async (req, res, next) => {
     }
 
     let totalAmount = 0;
-    const updatedStockItems = await Promise.all(
-      selectedStockItems.map(async (item) => {
-        const product = await stockModel.findOne({
-          NameOfProduct: item.NameOfProduct,
-        });
-        if (!product) {
-          throw new NotFoundError(`Product not found: ${item.NameOfProduct}`);
-        }
+    const updatedStockItems = await Promise.all(selectedStockItems.map(async (item) => {
+      const product = await stockModel.findOne({ NameOfProduct: item.NameOfProduct });
+      if (!product) {
+        throw new NotFoundError(`Product not found: ${item.NameOfProduct}`);
+      }
+      const itemTotalPrice = item.quantity * product.pricePerTon;
+      totalAmount += itemTotalPrice;
+      return {
+        _id: product._id, // Use product ID instead of name
+        NameOfProduct: product.NameOfProduct,
+        Description: product.description,
+        pricePerTon: product.pricePerTon,
+        quantity: item.quantity,
+        typeOfProduct:item.typeOfProduct,
+        itemTotalPrice
+      };
+    }));
 
-        const itemTotalPrice = item.quantity * product.pricePerTon;
-        totalAmount += itemTotalPrice;
-
-        return {
-          _id: product._id, // Use product ID instead of name
-          NameOfProduct: product.NameOfProduct,
-          Description: product.description,
-          pricePerTon: product.pricePerTon,
-          quantity: item.quantity,
-          itemTotalPrice,
-        };
-      })
-    );
 
     const newOrder = new orderModel({
       customer,
@@ -108,7 +104,7 @@ export const addOrder = asyncWrapper(async (req, res, next) => {
 
 export const getAllOrders = asyncWrapper(async (req, res, next) => {
   try {
-    const orders = await orderModel.find({ user: req.user.id });
+    const orders = await orderModel.find({ customer: req.user.id });
     res.status(200).json({ success: true, data: orders });
   } catch (error) {
     next(error);
@@ -119,7 +115,8 @@ export const getOrder = asyncWrapper(async (req, res, next) => {
   try {
     const orderId = req.params.id;
     const userId = req.user.id;
-    const order = await orderModel.findOne({ _id: orderId, user: userId });
+    const order = await orderModel.findOne({_id: orderId, customer: userId });
+  
     if (!order) {
       throw new NotFoundError("Order not found");
     }
@@ -227,6 +224,7 @@ export const deleteOrder = asyncWrapper(async (req, res, next) => {
   try {
     const orderId = req.params.id;
     const userId = req.user.id;
+
     const order = await orderModel.findByOneAndDelete({
       _id: orderId,
       user: userId,

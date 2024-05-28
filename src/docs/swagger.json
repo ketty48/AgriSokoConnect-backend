@@ -321,6 +321,32 @@
         }
       }
     }},
+    "/AgriSoko/stock/getAll": {
+      "get": {
+        "summary": "Get all stocks",
+        "description": "Retrieve all stocks",
+        "tags": ["Stock"],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Stock"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }},
     "/AgriSoko/stock/retrieve/{id}": {
       "get": {
         "summary": "Get stock by ID",
@@ -451,6 +477,32 @@
         }
       }
     },
+    "/AgriSoko/stock/getAllOrders": {
+      "get": {
+        "summary": "Get all orders related to your stock",
+        "description": "Retrieve all orders related to your stock",
+        "tags": ["Stock"],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Stock"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }},
     "/AgriSoko/order/create": {
       "post": {
         "summary": "Create order",
@@ -1083,6 +1135,10 @@
         "typeOfProduct": {
           "type": "string",
           "description": "Type of the product"
+        },
+        "typeOfProduct": {
+          "type": "string",
+          "description": "The quality you want"
         }
       },
       "required": ["NameOfProduct", "quantity","typeOfProduct"]

@@ -11,7 +11,7 @@ const selectedStockItemSchema = new Schema({
   },
   typeOfProduct: {
     type: String,
-    required: true,
+    required: false,
   },
   itemTotalPrice: {
     type: Number,

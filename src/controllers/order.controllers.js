@@ -225,10 +225,16 @@ export const deleteOrder = asyncWrapper(async (req, res, next) => {
     const orderId = req.params.id;
     const userId = req.user.id;
 
-    const order = await orderModel.findByOneAndDelete({
-      _id: orderId,
+    console.log('orderId:', orderId); // Log orderId
+    console.log('userId:', userId); // Log userId
+
+    const order = await orderModel.findOneAndDelete({
       user: userId,
+      _id: orderId
     });
+
+    console.log('order:', order); // Log order
+
     if (!order) {
       throw new NotFoundError("Order not found");
     }
@@ -240,3 +246,30 @@ export const deleteOrder = asyncWrapper(async (req, res, next) => {
     next(error);
   }
 });
+export const adminDeleteOrder = asyncWrapper(async (req, res, next) => {
+  try {
+    const orderId = req.params.id;
+    // const userId = req.user.id;
+
+    console.log('orderId:', orderId); // Log orderId
+    // console.log('userId:', userId); // Log userId
+
+    const order = await orderModel.findByIdAndDelete({
+      _id: orderId
+    });
+
+    console.log('order:', order); // Log order
+
+    if (!order) {
+      throw new NotFoundError("Order not found");
+    }
+
+    res
+      .status(200)
+      .json({ success: true, message: "Order deleted successfully" });
+  } catch (error) {
+    next(error);
+  }
+});
+
+

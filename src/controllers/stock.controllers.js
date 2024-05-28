@@ -222,7 +222,6 @@ export const getOrdersByFarmerId = async (req, res) => {
         customer: {
           ...order.customer.toObject(),
           fullName: profile ? profile.fullName : null,
-          phoneNumber: profile ? profile.PhoneNumber : null
         }
       };
     }));

@@ -20,13 +20,7 @@ export const initiatePayment = async (req, res) => {
             return res.status(404).json({ message: 'Profile not found' });
         }
 
-        // Create a new order
-        const order = new Order({
-            user: user._id,
-            // Add other relevant order details
-        });
 
-        await order.save();
 
         const { PhoneNumber } = profile;
         const customerName = `${profile.fullName}`;
@@ -74,14 +68,7 @@ export const initiatePayment = async (req, res) => {
 
         console.log('Response:', response.body);
 
-        // if (response && response.body && response.body.status === 'success') {
-        //     // Update order status to "confirmed"
-        //     await Order.updateOne({ _id: order._id }, { status: 'confirmed' });
-            
-        //     res.redirect(response.body.data.link); // Redirect the user to the payment link
-        // } else {
-        //     res.status(500).json({ error: 'Payment initiation failed' });
-        // }
+ 
     } catch (err) {
         console.error('Error:', err);
         if (err.response) {

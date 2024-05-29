@@ -44,7 +44,7 @@ export const initiatePayment = async (req, res) => {
                 logo: "http://www.piedpiper.com/app/themes/joystick-v27/images/logo.png"
             },
             configurations: {
-                session_duration: 1, // Session timeout in minutes (maxValue: 1440 minutes)    
+                session_duration: 5, // Session timeout in minutes (maxValue: 1440 minutes)    
                 max_retry_attempt: 5, // Max retry (int)
             }
         };
@@ -67,7 +67,7 @@ export const initiatePayment = async (req, res) => {
         });
 
         console.log('Response:', response.body);
-
+        res.status(200).json({ data: response.body });
  
     } catch (err) {
         console.error('Error:', err);
@@ -75,7 +75,7 @@ export const initiatePayment = async (req, res) => {
             console.error('Error Response:', err.response.body);
             res.status(err.response.statusCode).json({ error: err.response.body });
         } else {
-            res.status(500).json({ error: 'Internal Server Error' });
+            res.status(500).json({ error: 'Error' });
         }
     }
 };

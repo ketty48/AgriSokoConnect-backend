@@ -123,7 +123,10 @@ export const getOrder = asyncWrapper(async (req, res, next) => {
 export const updateOrder = asyncWrapper(async (req, res, next) => {
   try {
     const orderId = req.params.id;
-    // const userId = req.user.id;
+    const userId = req.user.id;
+    const userRole = req.user.role;
+
+    // Find the order by ID
     const order = await orderModel.findById(orderId);
     if (!order) {
       throw new NotFoundError("Order not found");
@@ -132,75 +135,100 @@ export const updateOrder = asyncWrapper(async (req, res, next) => {
     // Fetch the user based on order.customer
     const user = await userModel.findById(order.customer);
 
-    const { selectedStockItems, shippingAddress } = req.body;
-
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      const errorMessages = errors.array().map((error) => error.msg);
-      throw new BadRequestError(errorMessages.join(", "));
+    // Determine if the user has permission to update the order
+    if (userRole === 'buyer' && order.customer.toString() !== userId.toString()) {
+      throw new ForbiddenError("Buyers can only update their own orders");
+    } else if (userRole === 'farmer') {
+      const farmerStockItems = await stockModel.find({ user: userId });
+      const productNames = farmerStockItems.map(stockItem => stockItem.NameOfProduct);
+      const orderContainsFarmerStock = order.selectedStockItems.some(item => productNames.includes(item.NameOfProduct));
+      if (!orderContainsFarmerStock) {
+        throw new ForbiddenError("Farmers can only update orders related to their stock");
+      }
     }
 
-    const validStockItems = await Promise.all(
-      selectedStockItems.map(async (stockItem) => {
-        const stock = await stockModel.findOne({
-          NameOfProduct: stockItem.NameOfProduct,
-        });
-        if (!stock) {
-          console.warn(
-            `Stock item with NameOfProduct "${stockItem.NameOfProduct}" not found`
-          );
-          return null;
-        }
-        return stock;
-      })
-    );
+    // Extract update data from request
+    const { selectedStockItems, shippingAddress,status } = req.body;
 
-    const allStockItemsFound = validStockItems.every((stock) => stock !== null);
-    if (!allStockItemsFound) {
-      throw new BadRequestError("One or more stock items not found");
+    // Initialize an update object
+    const updateFields = {};
+
+    if (selectedStockItems) {
+      const validStockItems = await Promise.all(
+        selectedStockItems.map(async (stockItem) => {
+          const stock = await stockModel.findOne({
+            NameOfProduct: stockItem.NameOfProduct,
+          });
+          if (!stock) {
+            console.warn(
+              `Stock item with NameOfProduct "${stockItem.NameOfProduct}" not found`
+            );
+            return null;
+          }
+          return stock;
+        })
+      );
+
+      const allStockItemsFound = validStockItems.every((stock) => stock !== null);
+      if (!allStockItemsFound) {
+        throw new BadRequestError("One or more stock items not found");
+      }
+
+      let totalAmount = 0;
+      const updatedStockItems = validStockItems.map((stock, index) => {
+        const selectedItem = selectedStockItems[index];
+        const itemTotalPrice = selectedItem.quantity * stock.pricePerTon;
+
+        totalAmount += itemTotalPrice;
+
+        return {
+          NameOfProduct: selectedItem.NameOfProduct,
+          quantity: selectedItem.quantity,
+          itemTotalPrice,
+        };
+      });
+
+      // Update selectedStockItems and totalAmount fields
+      updateFields.selectedStockItems = updatedStockItems;
+      updateFields.totalAmount = totalAmount;
     }
 
-    let totalAmount = 0;
-    const updatedStockItems = validStockItems.map((stock, index) => {
-      const selectedItem = selectedStockItems[index];
-      const itemTotalPrice = selectedItem.quantity * stock.pricePerTon;
+    if (shippingAddress) {
+      // Update shippingAddress field
+      updateFields.shippingAddress = shippingAddress;
+    }
+    if (status) {
+      // Update shippingAddress field
+      updateFields.status= status;
+    }
 
-      totalAmount += itemTotalPrice;
 
-      return {
-        NameOfProduct: selectedItem.NameOfProduct,
-        quantity: selectedItem.quantity,
-        itemTotalPrice,
-      };
-    });
+    if (Object.keys(updateFields).length === 0) {
+      throw new BadRequestError("No valid fields provided for update");
+    }
 
-    order.selectedStockItems = updatedStockItems;
-    order.shippingAddress = shippingAddress;
-    order.totalAmount = totalAmount;
+    // Update the order with the new fields
+    const updatedOrder = await orderModel.findByIdAndUpdate(orderId, { $set: updateFields }, { new: true });
 
-    await order.save();
-
-    const recipientEmail = user.email; // Corrected the recipient email address
+    // Send email notification
+    const recipientEmail = user.email;
     const subject = "Your order has been updated";
     const body = `Dear ${user.email},
 
-
 Here are the updated details of your order:
 
-${updatedStockItems
-  .map(
+${selectedStockItems ? updatedStockItems.map(
     (item, index) => `
 Item ${index + 1}:
 Name: ${item.NameOfProduct}
 Quantity: ${item.quantity}
 Total Price: ${item.itemTotalPrice}
 `
-  )
-  .join("\n")}
+  ).join("\n") : ''}
 
-Total Amount: ${totalAmount}
+Total Amount: ${updateFields.totalAmount || order.totalAmount}
 Shipping Address:
-${shippingAddress}
+${shippingAddress || order.shippingAddress}
 
 Thank you for your order!
 
@@ -208,7 +236,9 @@ Sincerely,
 Agriconnect`;
 
     await sendEmail(recipientEmail, subject, body);
-    res.status(200).json({ success: true, data: order });
+
+    // Respond with the updated order
+    res.status(200).json({ success: true, data: updatedOrder });
   } catch (error) {
     next(error);
   }

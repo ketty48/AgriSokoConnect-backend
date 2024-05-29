@@ -217,7 +217,7 @@ export const getOrdersByFarmerId = async (req, res) => {
     const userId = req.user.id;
     const farmerStockItems = await stockModel.find({ user: userId });
     const productNames = farmerStockItems.map(stockItem => stockItem.NameOfProduct);
-    const orders = await Order.find({ 'selectedStockItems.NameOfProduct': { $in: productNames } })
+    const orders = await Order.find({ 'selectedStockItems.NameOfProduct': { $in: productNames },status: 'pending' })
       .populate('customer', 'email')  // Populate user email initially
 
     const ordersWithProfiles = await Promise.all(orders.map(async order => {

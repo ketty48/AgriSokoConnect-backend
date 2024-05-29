@@ -74,14 +74,14 @@ export const initiatePayment = async (req, res) => {
 
         console.log('Response:', response.body);
 
-        if (response && response.body && response.body.status === 'success') {
-            // Update order status to "confirmed"
-            await Order.updateOne({ _id: order._id }, { status: 'confirmed' });
+        // if (response && response.body && response.body.status === 'success') {
+        //     // Update order status to "confirmed"
+        //     await Order.updateOne({ _id: order._id }, { status: 'confirmed' });
             
-            res.redirect(response.body.data.link); // Redirect the user to the payment link
-        } else {
-            res.status(500).json({ error: 'Payment initiation failed' });
-        }
+        //     res.redirect(response.body.data.link); // Redirect the user to the payment link
+        // } else {
+        //     res.status(500).json({ error: 'Payment initiation failed' });
+        // }
     } catch (err) {
         console.error('Error:', err);
         if (err.response) {

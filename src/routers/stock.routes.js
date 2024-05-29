@@ -1,6 +1,6 @@
 import express from 'express';
 const stockRouter = express.Router();
-import { addStock,getStock,getStockByID,updateStock,deleteStock,getStocks,getOrdersByFarmerId } from '../controllers/stock.controllers.js';
+import { addStock,getStock,getStockByID,updateStock,deleteStock,getStocks,getOrdersByFarmerId,getConfirmedOrdersByFarmerId  } from '../controllers/stock.controllers.js';
 import { addStockValidations } from '../utils/validation.js';   
 import {requireAuth} from '../middlewares/authorization.js'
 import { getAllOrders,getOrder } from '../controllers/farmerOrder.controller.js';
@@ -21,5 +21,6 @@ stockRouter.get('/allOrders',attachUserRole, authorizeRoles(['farmer']),getAllOr
 stockRouter.get('/getOrder/:id',attachUserRole, authorizeRoles(['farmer']),getOrder)
 stockRouter.get('/getAll',attachUserRole, authorizeRoles(['farmer','buyer']), getStocks);
 stockRouter.get('/getAllOrders',attachUserRole, authorizeRoles(['farmer']), getOrdersByFarmerId );
+stockRouter.get('/getAllPayedOrders',attachUserRole, authorizeRoles(['farmer']), getConfirmedOrdersByFarmerId );
 
 export default stockRouter;

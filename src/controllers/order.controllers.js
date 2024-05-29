@@ -150,7 +150,6 @@ export const updateOrder = asyncWrapper(async (req, res, next) => {
     // Extract update data from request
     const { selectedStockItems, shippingAddress,status } = req.body;
 
-    // Initialize an update object
     const updateFields = {};
 
     if (selectedStockItems) {

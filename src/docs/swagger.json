@@ -503,6 +503,32 @@
           }
         }
       }},
+      "/AgriSoko/stock/getAllPayedOrders": {
+        "get": {
+          "summary": "Get all orders related to your stock",
+          "description": "Retrieve all orders related to your stock",
+          "tags": ["Stock"],
+          "security": [
+            {
+              "BearerAuth": []
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful operation",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/Stock"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }},
     "/AgriSoko/order/create": {
       "post": {
         "summary": "Create order",

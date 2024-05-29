@@ -217,7 +217,7 @@ export const getOrdersByFarmerId = async (req, res) => {
     const userId = req.user.id;
     const farmerStockItems = await stockModel.find({ user: userId });
     const productNames = farmerStockItems.map(stockItem => stockItem.NameOfProduct);
-    const orders = await Order.find({ 'selectedStockItems.NameOfProduct': { $in: productNames } })
+    const orders = await Order.find({ 'selectedStockItems.NameOfProduct': { $in: productNames },status: 'pending' })
       .populate('customer', 'email')  // Populate user email initially
 
     const ordersWithProfiles = await Promise.all(orders.map(async order => {
@@ -235,5 +235,33 @@ export const getOrdersByFarmerId = async (req, res) => {
   } catch (error) {
     console.error('Error retrieving orders for farmer:', error);
     res.status(500).send({ error: 'Error retrieving orders.' });
+  }
+};
+export const getConfirmedOrdersByFarmerId = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const farmerStockItems = await stockModel.find({ user: userId });
+    const productNames = farmerStockItems.map(stockItem => stockItem.NameOfProduct);
+    
+    const confirmedOrders = await Order.find({ 
+      'selectedStockItems.NameOfProduct': { $in: productNames },
+      status: 'confirmed'
+    }).populate('customer', 'email'); // Populate user email initially
+
+    const ordersWithProfiles = await Promise.all(confirmedOrders.map(async order => {
+      const profile = await Profile.findOne({ user: order.customer._id });
+      return {
+        ...order.toObject(),
+        customer: {
+          ...order.customer.toObject(),
+          fullName: profile ? profile.fullName : null,
+        }
+      };
+    }));
+
+    res.status(200).send(ordersWithProfiles);
+  } catch (error) {
+    console.error('Error retrieving confirmed orders for farmer:', error);
+    res.status(500).send({ error: 'Error retrieving confirmed orders.' });
   }
 };

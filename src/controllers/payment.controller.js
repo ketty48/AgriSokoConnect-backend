@@ -68,6 +68,11 @@ export const initiatePayment = async (req, res) => {
 
         console.log('Response:', response.body);
         res.status(200).json({ data: response.body });
+
+        if (response && response.body && response.body.status === 'success') {
+            // Update order status to "confirmed"
+            await Order.updateOne({ customer: user._id}, { status: 'confirmed' });
+        }
  
     } catch (err) {
         console.error('Error:', err);

@@ -148,7 +148,7 @@ export const updateOrder = asyncWrapper(async (req, res, next) => {
     }
 
     // Extract update data from request
-    const { selectedStockItems, shippingAddress,status } = req.body;
+    const { selectedStockItems, shippingAddress,status ,phoneNumber} = req.body;
 
     const updateFields = {};
 
@@ -199,6 +199,10 @@ export const updateOrder = asyncWrapper(async (req, res, next) => {
     if (status) {
       // Update shippingAddress field
       updateFields.status= status;
+    }
+    if (phoneNumber) {
+      // Update shippingAddress field
+      updateFields.phoneNumber= phoneNumber;
     }
 
 

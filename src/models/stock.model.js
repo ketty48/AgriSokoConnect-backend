@@ -66,67 +66,68 @@ const calculateTransactionAndTax = async function (next) {
   if (this.isModified("quantity")) {
     const stockItem = await this.constructor.findById(this._id);
     const oldQuantity = stockItem ? stockItem.quantity : 0;
+    const quantityChange = oldQuantity - this.quantity; // Calculate the change in quantity
 
-    if (this.quantity < oldQuantity) {
-      const quantityReduced = oldQuantity - this.quantity;
-      const transactionAmount = calculateTransactionAmount(
-        quantityReduced,
-        this.pricePerTon
-      );
-      const taxAmount = calculateTaxAmount(transactionAmount);
+    const transactionAmount = calculateTransactionAmount(
+      Math.abs(quantityChange), // Use the absolute value of quantity change
+      this.pricePerTon
+    );
+    const taxAmount = calculateTaxAmount(transactionAmount);
 
-      const date = new Date();
-      const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
-      const endOfMonth = new Date(
-        date.getFullYear(),
-        date.getMonth() + 1,
-        0,
-        23,
-        59,
-        59,
-        999
-      );
+    const date = new Date();
+    const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+    const endOfMonth = new Date(
+      date.getFullYear(),
+      date.getMonth() + 1,
+      0,
+      23,
+      59,
+      59,
+      999
+    );
 
-      const existingTransaction = await TransactionAndTax.findOne({
+    // Find existing transaction and tax records for the current month
+    const existingTransaction = await TransactionAndTax.findOne({
+      user: this.user,
+      type: "Transaction",
+      date: { $gte: startOfMonth, $lte: endOfMonth },
+    });
+
+    const existingTax = await TransactionAndTax.findOne({
+      user: this.user,
+      type: "Tax",
+      date: { $gte: startOfMonth, $lte: endOfMonth },
+    });
+
+    // Update existing or create new transaction and tax records
+    if (existingTransaction) {
+      existingTransaction.amount += transactionAmount;
+      await existingTransaction.save();
+    } else {
+      await TransactionAndTax.create({
         user: this.user,
         type: "Transaction",
-        date: { $gte: startOfMonth, $lte: endOfMonth },
+        amount: transactionAmount,
+        date,
       });
+    }
 
-      const existingTax = await TransactionAndTax.findOne({
+    if (existingTax) {
+      existingTax.amount += taxAmount;
+      await existingTax.save();
+    } else {
+      await TransactionAndTax.create({
         user: this.user,
         type: "Tax",
-        date: { $gte: startOfMonth, $lte: endOfMonth },
+        amount: taxAmount,
+        date,
       });
-
-      if (existingTransaction) {
-        existingTransaction.amount += transactionAmount;
-        await existingTransaction.save();
-      } else {
-        await TransactionAndTax.create({
-          user: this.user,
-          type: "Transaction",
-          amount: transactionAmount,
-          date,
-        });
-      }
-
-      if (existingTax) {
-        existingTax.amount += taxAmount;
-        await existingTax.save();
-      } else {
-        await TransactionAndTax.create({
-          user: this.user,
-          type: "Tax",
-          amount: taxAmount,
-          date,
-        });
-      }
     }
   }
 
   next();
 };
+
 
 stockSchema.pre("save", calculateTransactionAndTax);
 

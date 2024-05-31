@@ -2,6 +2,7 @@
   "swagger": "2.0",
   "info": {
     "title": "AgriSokoConnect",
+    
     "description": "This is the API Specification for the AgriSokoConnect platform backend server.",
     "contact": {
       "email": "ketymagnifique@gmail.com"
@@ -347,107 +348,113 @@
           }
         }
       }},
-    "/AgriSoko/stock/retrieve/{id}": {
-      "get": {
-        "summary": "Get stock by ID",
-        "description": "Retrieve details of a specific stock by its ID",
+     "AgriSoko/stock/update/{id}":{
+      "put": {
+        "summary": "Update stock",
+        "description": "Update an existing stock entry",
         "tags": ["Stock"],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
+        "security": [{"BearerAuth": []}],
+        "consumes": ["multipart/form-data"],
         "parameters": [
           {
             "in": "path",
             "name": "id",
-            "type": "string",
             "required": true,
-            "description": "ID of the stock to retrieve"
+            "description": "ID of the stock entry to update",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "formData",
+            "name": "NameOfProduct",
+            "required": false,
+            "description": "Name of the product",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "formData",
+            "name": "Description",
+            "required": false,
+            "description": "Description of the product",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "formData",
+            "name": "pricePerTon",
+            "required": false,
+            "description": "Price per ton of the product",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "in": "formData",
+            "name": "quantity",
+            "required": false,
+            "description": "Quantity of the product",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "formData",
+            "name": "typeOfProduct",
+            "required": false,
+            "description": "Type of the product",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "formData",
+            "name": "image",
+            "required": false,
+            "description": "Image file associated with the stock",
+            "schema": {
+              "type": "file"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Stock found",
-            "schema": {
-              "$ref": "#/definitions/stock"
+            "description": "Stock updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "_id": { "type": "string" },
+                    "user": { "type": "string" },
+                    "NameOfProduct": { "type": "string" },
+                    "description": { "type": "string" },
+                    "pricePerTon": { "type": "number" },
+                    "quantity": { "type": "integer" },
+                    "typeOfProduct": { "type": "string" },
+                    "image": { "type": "string" },
+                    "createdAt": { "type": "string" },
+                    "updatedAt": { "type": "string" },
+                    "__v": { "type": "integer" }
+                  }
+                }
+              }
             }
           },
           "404": {
             "description": "Stock not found"
+          },
+          "400": {
+            "description": "Validation error"
           }
         }
       }
     }
-,"/AgriSoko/stock/update/{id}": {
-  "put": {
-    "summary": "Update stock",
-    "description": "Update an existing stock entry",
-    "tags": ["Stock"],
-    "security": [{"BearerAuth": []}],
-    "consumes": ["multipart/form-data"],
-    "parameters": [
-      {
-        "in": "path",
-        "name": "id",
-        "type": "string",
-        "required": true,
-        "description": "ID of the stock entry to update"
-      },
-      {
-        "in": "formData",
-        "name": "NameOfProduct",
-        "type": "string",
-        "required": false,
-        "description": "Name of the product"
-      },
-      {
-        "in": "formData",
-        "name": "description",
-        "type": "string",
-        "required": false,
-        "description": "Description of the product"
-      },
-      {
-        "in": "formData",
-        "name": "pricePerTon",
-        "type": "number",
-        "required": false,
-        "description": "Price per ton of the product"
-      },
-      {
-        "in": "formData",
-        "name": "quantity",
-        "type": "integer",
-        "required": false,
-        "description": "Quantity of the product"
-      },
-      {
-        "in": "formData",
-        "name": "typeOfProduct",
-        "type": "string",
-        "required": false,
-        "description": "Type of the product"
-      },
-      {
-        "in": "formData",
-        "name": "image",
-        "type": "file",
-        "required": false,
-        "description": "Image file associated with the stock"
-      }
-    ],
-    "responses": {
-      "200": {
-        "description": "Stock updated successfully"
-      },
-      "404": {
-        "description": "Stock not found"
-      }
-    }
-  }
-}
-,
+    
+,      
     "/AgriSoko/stock/delete/{id}": {
       "delete": {
         "summary": "Delete stock",
@@ -653,6 +660,7 @@
         }
       }
     }
+
 ,    
     "/AgriSoko/order/delete/{id}": {
       "delete": {
@@ -1125,7 +1133,7 @@
       "required": ["fullName","email","address1","address2","phoneNumber","role"]
     },
     
-    "stock": {
+    "Stock": {
       "type": "object",
       "properties": {
         "NameOfProduct": {

@@ -8,6 +8,7 @@ import cloudinary from "cloudinary";
 import dotenv from "dotenv";
 import Order from '../models/order.model.js'
 import Profile from '../models/editProfile.model.js'
+import mongoose from "mongoose";
 dotenv.config();
 cloudinary.v2.config({
   cloud_name: process.env.CLOUD_NAME,
@@ -151,41 +152,46 @@ export const getStockByID = asyncWrapper(async (req, res, next) => {
     return next(error);
   }
 });
-
 export const updateStock = asyncWrapper(async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    throw new BadRequestError(errors.array()[0].msg);
+    return next(new BadRequestError(errors.array()[0].msg));
   }
 
   const { NameOfProduct, Description, pricePerTon, quantity } = req.body;
   const userId = req.user.id;
-  const totalPrice = pricePerTon * quantity;
+
+  const updateFields = {};
+  if (NameOfProduct !== undefined) updateFields.NameOfProduct = NameOfProduct;
+  if (Description !== undefined) updateFields.Description = Description;
+  if (pricePerTon !== undefined) updateFields.pricePerTon = pricePerTon;
+  if (quantity !== undefined) updateFields.quantity = quantity;
+
+  if (quantity !== undefined && pricePerTon !== undefined) {
+    updateFields.totalPrice = quantity * pricePerTon;
+  }
 
   const updatedStock = await stockModel.findOneAndUpdate(
     { _id: req.params.id, user: userId },
-    {
-      NameOfProduct,
-      Description,
-      pricePerTon,
-      quantity,
-      totalPrice,
-    },
+    { $set: updateFields },
     { new: true }
   );
 
   if (!updatedStock) {
-    throw new NotFoundError("Stock not found");
+    return next(new NotFoundError("Stock not found"));
   }
 
   const user = await userModel.findById(userId);
-  if (!user || !user.userName) {
-    throw new NotFoundError("User not found or missing username");
+  if (!user) {
+    return next(new NotFoundError("User not found"));
   }
 
   const recipientEmail = user.email;
   const subject = "Stock Updated Notification";
-  const body = `Dear ${user.email},\n\nThe stock item (${NameOfProduct}) has been updated successfully. New Quantity: ${quantity}, New Price: ${totalPrice}.\n\n`;
+  let body = `Dear ${user.email},\n\nThe stock item (${NameOfProduct || 'N/A'}) has been updated successfully.`;
+  if (quantity !== undefined) body += ` New Quantity: ${quantity}.`;
+  if (updateFields.totalPrice !== undefined) body += ` New Price: ${updateFields.totalPrice}.`;
+  body += `\n\n`;
 
   try {
     await sendEmail(recipientEmail, subject, body);

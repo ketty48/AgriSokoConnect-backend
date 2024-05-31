@@ -9,7 +9,7 @@ import transactionRouter from './transaction.router.js'
 import adminRouter from './admin.router.js'
 import contactRouter from './contact.routes.js';
 import payRouter from './payment.router.js'
-
+import messageRouter from './message.routes.js';
 const router = express.Router();
 
 
@@ -22,4 +22,5 @@ router.use('/transaction', transactionRouter)
 router.use('/admin', adminRouter);
 router.use('/pay', payRouter);
 router.use('/contact', contactRouter);
+router.use('/message', messageRouter);
 export default router;

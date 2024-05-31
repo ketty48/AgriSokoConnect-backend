@@ -29,7 +29,7 @@ export const initiatePayment = async (req, res) => {
             tx_ref: 'RX1-' + uuidv4(),
             amount: "100", // Adjust the amount as needed
             currency: "RWF",
-            redirect_url: "https://agrisoko-connect-platform.netlify.app/",
+            redirect_url: "https://agrisoko-connect-platform.netlify.app/dashboard/buyer/allorders",
             meta: {
                 consumer_id: uuidv4(),
                 consumer_mac: "92a3-912ba-1192a"
@@ -71,7 +71,7 @@ export const initiatePayment = async (req, res) => {
 
         if (response && response.body && response.body.status === 'success') {
             // Update order status to "confirmed"
-            await Order.updateOne({ customer: user._id}, { status: 'confirmed' });
+            await Order.updateOne({ customer: user._id }, { status: 'confirmed' });
         }
  
     } catch (err) {

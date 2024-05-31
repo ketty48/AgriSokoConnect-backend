@@ -6,6 +6,7 @@ import { validationResult } from "express-validator";
 import { sendEmail } from "../utils/sendEmail.js";
 import stockModel from "../models/stock.model.js";
 
+
 export const addOrder = asyncWrapper(async (req, res, next) => {
   try {
     const requiredFields = ["selectedStockItems", "phoneNumber", "shippingAddress"];
@@ -24,29 +25,32 @@ export const addOrder = asyncWrapper(async (req, res, next) => {
     }
 
     let totalAmount = 0;
-    const updatedStockItems = await Promise.all(selectedStockItems.map(async (item) => {
+    const updatedStockItems = [];
+    for (const item of selectedStockItems) {
       const productName = item.NameOfProduct;
+      const requestedQuantity = item.quantity;
       const stockItem = await stockModel.findOne({ NameOfProduct: productName });
+      console.log("Debugging: stockItem =", stockItem); // Add this line for debugging
       if (!stockItem) {
         throw new NotFoundError(`Stock item not found: ${productName}`);
       }
       const typeOfProduct = stockItem.typeOfProduct;
-      const itemTotalPrice = item.quantity * stockItem.pricePerTon;
+      const availableQuantity = stockItem.quantity;
+      if (requestedQuantity > availableQuantity) {
+        throw new BadRequestError(`Requested quantity for ${productName} is greater than available stock`);
+      }
+      const itemTotalPrice = requestedQuantity * stockItem.pricePerTon;
       totalAmount += itemTotalPrice;
-      return {
+      updatedStockItems.push({
         _id: stockItem._id, // Use the ID of the found stock item
         NameOfProduct: stockItem.NameOfProduct,
         Description: stockItem.description,
         pricePerTon: stockItem.pricePerTon,
-        quantity: item.quantity,
+        quantity: requestedQuantity,
         typeOfProduct,
         itemTotalPrice
-      };
-    }));
-    
-
-    // The rest of your code remains unchanged...
-
+      });
+    }
 
     const newOrder = new orderModel({
       customer,
@@ -54,30 +58,23 @@ export const addOrder = asyncWrapper(async (req, res, next) => {
       phoneNumber,
       shippingAddress,
       totalAmount,
-      totalItems: selectedStockItems.reduce(
-        (total, item) => total + item.quantity,
-        0
-      ),
+      totalItems: selectedStockItems.reduce((total, item) => total + item.quantity, 0),
     });
 
     await newOrder.save();
 
-    await Promise.all(
-      updatedStockItems.map(async (item) => {
-        const stock = await stockModel.findById(item._id);
-        if (stock) {
-          stock.quantity -= item.quantity;
-          stock.totalPrice = stock.quantity * stock.pricePerTon; // Update total price
-          await stock.save();
-        }
-      })
-    );
+    await Promise.all(updatedStockItems.map(async (item) => {
+      const stock = await stockModel.findById(item._id);
+      if (stock) {
+        stock.quantity -= item.quantity;
+        stock.totalPrice = stock.quantity * stock.pricePerTon; // Update total price
+        await stock.save();
+      }
+    }));
 
     res.status(201).json({
       status: "Order placed successfully",
-      data: {
-        newOrder,
-      },
+      data: { newOrder },
     });
 
     const recipientEmail = user.email;
@@ -94,6 +91,7 @@ export const addOrder = asyncWrapper(async (req, res, next) => {
     next(error);
   }
 });
+
 
 
 export const getAllOrders = asyncWrapper(async (req, res, next) => {
@@ -139,6 +137,7 @@ export const updateOrder = asyncWrapper(async (req, res, next) => {
     if (userRole === 'buyer' && order.customer.toString() !== userId.toString()) {
       throw new ForbiddenError("Buyers can only update their own orders");
     } else if (userRole === 'farmer') {
+      // Check if the order contains stock related to the farmer
       const farmerStockItems = await stockModel.find({ user: userId });
       const productNames = farmerStockItems.map(stockItem => stockItem.NameOfProduct);
       const orderContainsFarmerStock = order.selectedStockItems.some(item => productNames.includes(item.NameOfProduct));
@@ -148,70 +147,65 @@ export const updateOrder = asyncWrapper(async (req, res, next) => {
     }
 
     // Extract update data from request
-    const { selectedStockItems, shippingAddress,status ,phoneNumber} = req.body;
+    const { selectedStockItems, shippingAddress, status, phoneNumber } = req.body;
 
     const updateFields = {};
 
     if (selectedStockItems) {
-      const validStockItems = await Promise.all(
-        selectedStockItems.map(async (stockItem) => {
-          const stock = await stockModel.findOne({
-            NameOfProduct: stockItem.NameOfProduct,
-          });
-          if (!stock) {
-            console.warn(
-              `Stock item with NameOfProduct "${stockItem.NameOfProduct}" not found`
-            );
-            return null;
-          }
-          return stock;
-        })
-      );
-
-      const allStockItemsFound = validStockItems.every((stock) => stock !== null);
-      if (!allStockItemsFound) {
-        throw new BadRequestError("One or more stock items not found");
-      }
-
+      const updatedStockItems = [];
       let totalAmount = 0;
-      const updatedStockItems = validStockItems.map((stock, index) => {
-        const selectedItem = selectedStockItems[index];
-        const itemTotalPrice = selectedItem.quantity * stock.pricePerTon;
-
-        totalAmount += itemTotalPrice;
-
-        return {
-          NameOfProduct: selectedItem.NameOfProduct,
-          quantity: selectedItem.quantity,
-          itemTotalPrice,
-        };
-      });
-
-      // Update selectedStockItems and totalAmount fields
+      let totalItems = 0;
+    
+      for (const selectedItem of selectedStockItems) {
+        const orderItem = order.selectedStockItems.find(item => item.NameOfProduct === selectedItem.NameOfProduct);
+        if (!orderItem) {
+          throw new BadRequestError(`Order does not contain item "${selectedItem.NameOfProduct}"`);
+        }
+    
+        const oldQuantity = orderItem.quantity;
+        const newQuantity = selectedItem.quantity;
+        const quantityDifference = newQuantity - oldQuantity;
+    
+        // Update the stock quantity accordingly
+        await updateStock(selectedItem.NameOfProduct, -quantityDifference); // Decrement stock for the ordered item
+    
+        // Calculate the item total price based on the new quantity
+        const stockItem = await stockModel.findOne({ NameOfProduct: selectedItem.NameOfProduct });
+        if (!stockItem) {
+          throw new NotFoundError(`Stock item "${selectedItem.NameOfProduct}" not found`);
+        }
+        const itemTotalPrice = stockItem.pricePerTon * newQuantity;
+        
+        totalAmount += itemTotalPrice; // Accumulate the total amount
+        totalItems += newQuantity; // Accumulate the total items
+    
+        updatedStockItems.push({
+          ...selectedItem,
+          itemTotalPrice
+        });
+      }
+    
+      // Update selectedStockItems and totalAmount/totalItems in updateFields
       updateFields.selectedStockItems = updatedStockItems;
       updateFields.totalAmount = totalAmount;
+      updateFields.totalItems = totalItems;
     }
+    
 
+    // Update other fields if provided
     if (shippingAddress) {
-      // Update shippingAddress field
       updateFields.shippingAddress = shippingAddress;
     }
     if (status) {
-      // Update shippingAddress field
-      updateFields.status= status;
+      updateFields.status = status;
     }
     if (phoneNumber) {
-      // Update shippingAddress field
-      updateFields.phoneNumber= phoneNumber;
-    }
-
-
-    if (Object.keys(updateFields).length === 0) {
-      throw new BadRequestError("No valid fields provided for update");
+      updateFields.phoneNumber = phoneNumber;
     }
 
     // Update the order with the new fields
     const updatedOrder = await orderModel.findByIdAndUpdate(orderId, { $set: updateFields }, { new: true });
+
 
     // Send email notification
     const recipientEmail = user.email;
@@ -219,17 +213,18 @@ export const updateOrder = asyncWrapper(async (req, res, next) => {
     const body = `Dear ${user.email},
 
 Here are the updated details of your order:
-
-${selectedStockItems ? updatedStockItems.map(
+${updateFields.selectedStockItems ? updateFields.selectedStockItems.map(
     (item, index) => `
 Item ${index + 1}:
 Name: ${item.NameOfProduct}
 Quantity: ${item.quantity}
-Total Price: ${item.itemTotalPrice}
+Price per Ton: ${item.pricePerTon}
+Total Price: ${item.itemTotalPrice.toFixed(2)}
 `
   ).join("\n") : ''}
 
-Total Amount: ${updateFields.totalAmount || order.totalAmount}
+Total Amount: ${updateFields.totalAmount?.toFixed(2) || order.totalAmount}
+Total Items: ${updateFields.totalItems || order.totalItems}
 Shipping Address:
 ${shippingAddress || order.shippingAddress}
 
@@ -243,9 +238,39 @@ Agriconnect`;
     // Respond with the updated order
     res.status(200).json({ success: true, data: updatedOrder });
   } catch (error) {
+    console.error("Error updating order:", error); // Log the error for debugging
     next(error);
   }
 });
+
+const updateStock = async (itemName, quantityDifference) => {
+  // Find the stock item by name
+  const stockItem = await stockModel.findOne({ NameOfProduct: itemName });
+
+  if (!stockItem) {
+    throw new NotFoundError(`Stock item "${itemName}" not found`);
+  }
+
+  // Increment or decrement the stock quantity based on the quantity difference
+  const newQuantity = stockItem.quantity + quantityDifference;
+
+  // Ensure the stock quantity doesn't go negative
+  if (newQuantity < 0) {
+    throw new BadRequestError(`Insufficient stock for item "${itemName}"`);
+  }
+
+  // Calculate the new item total price
+  const newItemTotalPrice = newQuantity * stockItem.pricePerTon;
+
+  // Update the stock quantity and total price
+  await stockModel.findOneAndUpdate(
+    { NameOfProduct: itemName },
+    { $set: { quantity: newQuantity, totalPrice: newItemTotalPrice } }
+  );
+
+  return { newQuantity, newItemTotalPrice };
+};
+
 
 export const deleteOrder = asyncWrapper(async (req, res, next) => {
   try {
@@ -256,7 +281,7 @@ export const deleteOrder = asyncWrapper(async (req, res, next) => {
     console.log('userId:', userId); // Log userId
 
     const order = await orderModel.findOneAndDelete({
-      user: userId,
+      customer: userId,
       _id: orderId
     });
 

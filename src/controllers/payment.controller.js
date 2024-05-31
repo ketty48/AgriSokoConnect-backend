@@ -25,12 +25,13 @@ export const initiatePayment = async (req, res) => {
         const { PhoneNumber } = profile;
         const customerName = `${profile.fullName}`;
         const orderId = req.params.orderId;
-        const redirectUrl = req.headers.referer;
+        // const redirectUrl = req.headers.referer;
         const payload = {
             tx_ref: 'RX1-' + uuidv4(),
             amount: "100", // Adjust the amount as needed
+            country:"RW",
             currency: "RWF",
-            redirect_url: redirectUrl,
+            redirect_url: 'https://agrisoko-connect-platform.netlify.app/dashboard/buyer/allorders',
             meta: {
                 consumer_id: uuidv4(),
                 consumer_mac: "92a3-912ba-1192a"

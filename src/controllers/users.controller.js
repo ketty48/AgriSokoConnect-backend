@@ -191,7 +191,7 @@ export const ForgotPassword = asyncWrapper(async (req, res, next) => {
         expirationDate: new Date().getTime() + (60 * 1000 * 5),
     });
 
-    const link = `http://localhost:5173/reset?id=${foundUser.id}`;
+    const link = `https://agrisoko-connect-platform.netlify.app/reset?id=${foundUser.id}`;
     const emailBody = `Click on the link below to reset your password\n\n${link}`;
 
     await sendEmail(req.body.email, "Reset your password", emailBody);

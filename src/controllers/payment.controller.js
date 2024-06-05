@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import got from 'got';
 import User from '../models/users.model.js';
 import Profile from '../models/editProfile.model.js';
+import Order from '../models/order.model.js'; // Import your order model
 
 dotenv.config();
 
@@ -19,14 +20,16 @@ export const initiatePayment = async (req, res) => {
             return res.status(404).json({ message: 'Profile not found' });
         }
 
+
+
         const { PhoneNumber } = profile;
         const customerName = `${profile.fullName}`;
 
         const payload = {
             tx_ref: 'RX1-' + uuidv4(),
-            amount: "100",
+            amount: "100", // Adjust the amount as needed
             currency: "RWF",
-            redirect_url: "https://agrisoko-connect-platform.netlify.app",
+            redirect_url: "https://agrisoko-connect-platform.netlify.app/dashboard/buyer/allorders",
             meta: {
                 consumer_id: uuidv4(),
                 consumer_mac: "92a3-912ba-1192a"
@@ -41,7 +44,7 @@ export const initiatePayment = async (req, res) => {
                 logo: "http://www.piedpiper.com/app/themes/joystick-v27/images/logo.png"
             },
             configurations: {
-                session_duration: 1, // Session timeout in minutes (maxValue: 1440 minutes)    
+                session_duration: 5, // Session timeout in minutes (maxValue: 1440 minutes)    
                 max_retry_attempt: 5, // Max retry (int)
             }
         };
@@ -64,19 +67,20 @@ export const initiatePayment = async (req, res) => {
         });
 
         console.log('Response:', response.body);
+        res.status(200).json({ data: response.body });
 
         if (response && response.body && response.body.status === 'success') {
-            res.redirect(response.body.data.link); // Redirect the user to the payment link
-        } else {
-            res.status(500).json({ error: 'Payment initiation failed' });
+            // Update order status to "confirmed"
+            await Order.updateOne({ customer: user._id }, { status: 'confirmed' });
         }
+ 
     } catch (err) {
         console.error('Error:', err);
         if (err.response) {
             console.error('Error Response:', err.response.body);
             res.status(err.response.statusCode).json({ error: err.response.body });
         } else {
-            res.status(500).json({ error: 'Internal Server Error' });
+            res.status(500).json({ error: 'Error' });
         }
     }
 };

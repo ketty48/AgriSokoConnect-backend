@@ -348,6 +348,45 @@
           }
         }
       }},
+      "/AgriSoko/stock/retrieve/{id}": {
+        "get": {
+          "summary": "Get stock by ID",
+          "description": "Retrieve a specific stock by its ID",
+          "tags": ["Stock"],
+          "security": [
+            {
+              "BearerAuth": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "description": "ID of the stock to retrieve",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful operation",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/definitions/Stock"
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Stock not found"
+            }
+          }
+        }
+      }
+    ,
      "AgriSoko/stock/update/{id}":{
       "put": {
         "summary": "Update stock",

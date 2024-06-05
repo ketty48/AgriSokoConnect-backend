@@ -12,7 +12,7 @@ const stockSchema = new Schema(
       type: String,
       required: false,
     },
-    Description: {
+    description: {
       type: String,
       required: false,
     },

@@ -18,7 +18,9 @@ cloudinary.v2.config({
 export const addStock = [
   asyncWrapper(async (req, res, next) => {
     const userId = req.user.id;
-    const { NameOfProduct, ...otherFields } = req.body;
+    console.log("Request body:", req.body);
+    const { NameOfProduct, description, ...otherFields } = req.body;
+    console.log("Description:", description); // This should now correctly log the description
     if (!req.files || !("image" in req.files)) {
       return res.json({ message: "err" });
     }
@@ -35,6 +37,7 @@ export const addStock = [
     const newStock = new stockModel({
       user: req.user.id,
       NameOfProduct,
+      description, // This should now correctly add the description to the new stock
       image: profileP.secure_url,
       ...otherFields,
     });
@@ -53,7 +56,6 @@ export const addStock = [
       console.error("Error sending notification email:", error);
     }
 
-    // Manually include the totalPrice property in the response body
     const responseData = {
       status: "Stock added successfully",
       data: {
@@ -67,6 +69,7 @@ export const addStock = [
     res.status(201).json(responseData);
   }),
 ];
+
 
 export const getStock = asyncWrapper(async (req, res, next) => {
   try {

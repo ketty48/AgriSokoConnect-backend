@@ -189,6 +189,9 @@ export const updateOrder = asyncWrapper(async (req, res, next) => {
       updateFields.selectedStockItems = updatedStockItems;
       updateFields.totalAmount = totalAmount;
       updateFields.totalItems = totalItems;
+
+      // Retain typeOfProduct in updatedStockItems
+      updateFields.typeOfProduct = updatedStockItems.map(item => item.typeOfProduct);
     }
     
 
@@ -242,6 +245,7 @@ Agriconnect`;
     next(error);
   }
 });
+
 
 const updateStock = async (itemName, quantityDifference) => {
   // Find the stock item by name
